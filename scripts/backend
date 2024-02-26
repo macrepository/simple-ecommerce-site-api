@@ -1,0 +1,6 @@
+#!/bin/bash
+
+source "${PWD}/.env"
+
+COMMAND="$@"
+docker exec -it ${PROJECT}_node sh -c "cd app/backend/ && $COMMAND"

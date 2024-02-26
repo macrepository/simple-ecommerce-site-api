@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  node:
+    build:
+      context: ./builds/alpine3.19
+      dockerfile: Dockerfile
+    image: "${PROJECT}_alpine3.19"
+    container_name: "${PROJECT}_node"
+    ports:
+      - "3000:3000"
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+      - "${CLIENT_PORT}:${CLIENT_PORT}"
+    environment:
+      - PORT=3000
+      - BACKEND_PORT=${BACKEND_PORT}
+      - CLIENT_PORT=${CLIENT_PORT}
+      - PROJECT=${PROJECT}
+    depends_on:
+      - db
+    command: node ./public/app.js
+    volumes:
+      - ./app:/app
+      - ./public:/public
+    networks:
+      - ${PROJECT}
+  db:
+    image: mysql:8.1
+    container_name: "${PROJECT}_mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./builds/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
+    networks:
+      - ${PROJECT}
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: "${PROJECT}_phpmyadmin"
+    environment:
+      PMA_HOST: db
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
+    restart: always
+    ports:
+      - "8080:80"
+    networks:
+      - ${PROJECT}
+  deploy:
+    image: "${PROJECT}_alpine3.19"
+    container_name: "${PROJECT}_deploy"
+    volumes:
+      - ./app:/app
+      - ./public:/public
+    depends_on:
+      - node
+      - db
+    networks:
+      - ${PROJECT}
+
+networks:
+  custom_network:
+    driver: bridge

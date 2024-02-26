@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source "${PWD}/.env"
+
+docker exec -it ${PROJECT}_node node "$@"

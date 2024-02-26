@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source "${PWD}/.env"
+
+docker exec -it ${PROJECT}_mysql mysql -u${MYSQL_USER} -p"${MYSQL_PASSWORD}" ${MYSQL_DATABASE}

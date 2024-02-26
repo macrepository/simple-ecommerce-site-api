@@ -1,0 +1,8 @@
+#!/bin/bash
+
+source "${PWD}/.env"
+
+docker exec -it ${PROJECT}_mysql mysql "$@"
+
+#ALTER USER 'node'@'%' IDENTIFIED WITH mysql_native_password BY 'pwdnac255';
+
