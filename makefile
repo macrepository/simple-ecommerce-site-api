@@ -6,6 +6,7 @@ build:
 	sed -i'' -e "s/custom_network/${PROJECT}/" docker-compose.yml
 	docker compose up -d
 down:
+	sudo rm -rf mysql/*
 	docker compose down -v
 start:
 	docker compose start

@@ -35,5 +35,5 @@ $ make build
 
 ## Execute this script if other hosts cannot login to mysql database
 $ ./scripts/mysqllogin
-$ ALTER USER 'node'@'%' IDENTIFIED WITH mysql_native_password BY 'pwdnac255';
+$ ALTER USER '<your user>'@'%' IDENTIFIED WITH mysql_native_password BY '<your password>';
 ```
