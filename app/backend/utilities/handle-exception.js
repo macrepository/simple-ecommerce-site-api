@@ -79,20 +79,20 @@ function isDatabaseError(exception) {
 function formatDatabaseError(exception, objectData) {
   const key = getColumnKeyBySqlErrorMessage(exception, objectData);
   if (key) {
-    return formatBadRequestMessage(key, exception.sqlMessage);
+    return formatConflictRequestMessage(key, exception.sqlMessage);
   }
   return formatInternalServerError(exception.sqlMessage);
 }
 
 /**
- * Creates a bad request error format.
+ * Creates a conflict request error format.
  * @param {string} field
  * @param {string} message
  * @returns {Object}
  */
-function formatBadRequestMessage(field, message) {
+function formatConflictRequestMessage(field, message) {
   return {
-    badRequestMessage: [{ field, message }],
+    conflictRequestMessage: [{ field, message }],
   };
 }
 
@@ -118,12 +118,12 @@ function formatInternalServerError(message) {
 function handleExceptionRoutes(ctx, exception, objectData = null) {
   const error = exceptionErrorFormatter(exception, objectData);
 
-  if (error?.badRequestMessage)
+  if (error?.conflictRequestMessage)
     return response(
       ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      error.badRequestMessage
+      httpResponse.conflict,
+      httpResponse.conflict.message.genericFailed,
+      error.conflictRequestMessage
     );
 
   logger.error("handleExceptionRoutes", exception);

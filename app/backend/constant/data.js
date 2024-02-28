@@ -47,6 +47,7 @@ exports.httpResponse = {
       code: "conflict",
       status: 409,
       message: {
+        genericFailed: "Failed to perform the request",
         saveFailed: "Failed to create a new %1 record.",
         updateFailed: "Failed to update %1 record.",
         deleteFailed: "Failed to delete %1 record."

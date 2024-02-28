@@ -146,7 +146,7 @@ async function loginCustomer(ctx) {
   const { email, password } = ctx.request.body;
 
   try {
-    const { data: customer } = await CustomerModel.findByEmail(email);
+    const { data: customer } = (await CustomerModel.findByEmail(email)) || {};
 
     if (!customer) {
       return response(
@@ -169,6 +169,7 @@ async function loginCustomer(ctx) {
     delete customer.password;
     const token = generateToken({ ...customer });
     ctx.set("x-auth-token", token);
+
     return response(
       ctx,
       httpResponse.success,
