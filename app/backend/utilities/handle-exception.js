@@ -1,3 +1,4 @@
+const logger = require("./logger");
 const { httpResponse } = require("../config/data");
 const { response } = require("./http-response");
 
@@ -109,9 +110,9 @@ function formatInternalServerError(message) {
 /**
  * The function `handleExceptionRoutes` processes exceptions and returns appropriate responses based on
  * the error type.
- * @param {Object} ctx 
- * @param {Object} exception 
- * @param {Object|null} objectData 
+ * @param {Object} ctx
+ * @param {Object} exception
+ * @param {Object|null} objectData
  * @returns {Object}
  */
 function handleExceptionRoutes(ctx, exception, objectData = null) {
@@ -119,6 +120,8 @@ function handleExceptionRoutes(ctx, exception, objectData = null) {
 
   if (error?.badRequestMessage)
     return response(ctx, httpResponse.badRequest, error.badRequestMessage);
+
+  logger.error("handleExceptionRoutes", exception);
 
   return response(
     ctx,
@@ -129,5 +132,5 @@ function handleExceptionRoutes(ctx, exception, objectData = null) {
 
 module.exports = {
   exceptionErrorFormatter,
-  handleExceptionRoutes
+  handleExceptionRoutes,
 };

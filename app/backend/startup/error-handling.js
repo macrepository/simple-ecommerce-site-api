@@ -1,14 +1,17 @@
+const logger = require("../utilities/logger");
+
+// Error Handler
+
 module.exports = function (app) {
-  // Error Handling
   app.on("error", (err) => {
-    console.error("server error: ", err);
+    logger.error("error", err);
   });
 
   process.on("uncaughtException", (ex) => {
-    console.error("uncaughtException: ", ex);
+    logger.error - ("uncaughtException", ex);
   });
 
   process.on("unhandledRejection", (ex) => {
-    console.error("unhandledRejection: ", ex);
+    logger.error("unhandledRejection", ex);
   });
 };
