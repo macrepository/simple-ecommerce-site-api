@@ -3,11 +3,9 @@ const { httpResponse } = require("../../config/data");
 const { validateCustomer } = require("./helper");
 const { response } = require("../../utilities/http-response");
 const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
-const { hashPassword } = require("../../utilities/password");
-const {
-  exceptionErrorFormatter,
-  handleExceptionRoutes
-} = require("../../utilities/handle-exception");
+const { hashPassword, comparePassword } = require("../../utilities/password");
+const { handleExceptionRoutes } = require("../../utilities/handle-exception");
+const { generateToken } = require("../../utilities/json-web-token");
 
 /**
  * Save Customer details
@@ -30,7 +28,15 @@ async function saveCustomer(ctx) {
 
     delete customerReqData.repeat_password;
     customerReqData.password = await hashPassword(customerReqData.password);
-    await CustomerModel.save(customerReqData);
+    const result = await CustomerModel.save(customerReqData);
+
+    if (!result) {
+      return response(
+        ctx,
+        httpResponse.badRequest,
+        "Failure on creating new customer record."
+      );
+    }
 
     return response(ctx, httpResponse.success);
   } catch (exception) {
@@ -40,7 +46,7 @@ async function saveCustomer(ctx) {
 
 /**
  * Get Customer Details
- * @param {Object} ctx 
+ * @param {Object} ctx
  * @returns {Object}
  */
 async function getCustomer(ctx) {
@@ -62,7 +68,7 @@ async function getCustomer(ctx) {
 
 /**
  * Update Customer Details
- * @param {Object} ctx 
+ * @param {Object} ctx
  * @returns {Object}
  */
 async function patchCustomer(ctx) {
@@ -70,7 +76,7 @@ async function patchCustomer(ctx) {
   const customerReqData = ctx.request.body;
 
   try {
-    const { error } = validateCustomer(customerReqData);
+    const { error } = validateCustomer(customerReqData, true);
 
     if (error) {
       return response(
@@ -81,7 +87,15 @@ async function patchCustomer(ctx) {
     }
 
     delete customerReqData.repeat_password;
-    await CustomerModel.update(customerId, customerReqData);
+    const result = await CustomerModel.update(customerId, customerReqData);
+
+    if (!result) {
+      response(
+        ctx,
+        httpResponse.internalServerError,
+        "Failure on updating customer record."
+      );
+    }
 
     return response(ctx, httpResponse.success);
   } catch (exception) {
@@ -91,7 +105,7 @@ async function patchCustomer(ctx) {
 
 /**
  * Delete customer data
- * @param {Object} ctx 
+ * @param {Object} ctx
  * @returns {Object}
  */
 async function deleteCustomer(ctx) {
@@ -99,12 +113,8 @@ async function deleteCustomer(ctx) {
 
   try {
     if (!customerId) {
-      return response(
-        ctx,
-        httpResponse.badRequest,
-        "Customer ID was not set"
-      );
-    } 
+      return response(ctx, httpResponse.badRequest, "Customer ID was not set");
+    }
 
     const result = await CustomerModel.delete(customerId);
 
@@ -122,9 +132,43 @@ async function deleteCustomer(ctx) {
   }
 }
 
+async function loginCustomer(ctx) {
+  const { email, password } = ctx.request.body;
+
+  try {
+    const { data: customer } = await CustomerModel.findByEmail(email);
+
+    if (!customer) {
+      return response(
+        ctx,
+        httpResponse.unauthorized,
+        "Invalid username or password"
+      );
+    }
+
+    const validPassword = await comparePassword(password, customer.password);
+
+    if (!validPassword) {
+      return response(
+        ctx,
+        httpResponse.unauthorized,
+        "Invalid username or password"
+      );
+    }
+
+    delete customer.password;
+    const token = generateToken({ ...customer });
+    ctx.set("x-auth-token", token);
+    return response(ctx, httpResponse.success, customer);
+  } catch (exception) {
+    return handleExceptionRoutes(ctx, exception, ctx.request.body);
+  }
+}
+
 module.exports = {
   saveCustomer,
   getCustomer,
   patchCustomer,
   deleteCustomer,
+  loginCustomer,
 };
