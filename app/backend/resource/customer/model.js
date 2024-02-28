@@ -22,7 +22,13 @@ class CustomerModel {
   }
 
   async findById(id) {
-    const customer = await this.create().where("id", id);
+    const customer = await this.create().first().where("id", id);
+
+    return returnModelData(CustomerModel, customer);
+  }
+
+  async findByEmail(email) {
+    const customer = await this.create().first().where("email", email);
 
     return returnModelData(CustomerModel, customer);
   }
