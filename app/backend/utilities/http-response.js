@@ -1,18 +1,19 @@
 /**
- * The function `response` sets the status, body, and data/error message based on the response code and
- * message provided.
+ * The function `response` generates a response object with status, message, and optional data or error
+ * based on the provided response code.
  * @param {Object} ctx
  * @param {Object} response
+ * @param {string} message
  * @param {Object|string|null} body
- * @returns
+ * @returns {Object}
  */
-function response(ctx, response, body = null) {
-  const { code, status, message } = response;
+function response(ctx, response, message, body = null) {
+  const { code, status } = response;
   ctx.status = status;
   ctx.body = {
     code,
     message,
-    ...(code === "success" ? { data: body || null } : { error: body || null }),
+    body
   };
 
   return ctx;

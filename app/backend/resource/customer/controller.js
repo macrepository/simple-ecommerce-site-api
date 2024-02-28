@@ -6,7 +6,7 @@ const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
 const { hashPassword, comparePassword } = require("../../utilities/password");
 const { handleExceptionRoutes } = require("../../utilities/handle-exception");
 const { generateToken } = require("../../utilities/json-web-token");
-
+const { __ } = require("../../utilities/string-formatter");
 /**
  * Save Customer details
  * @param {Object} ctx
@@ -22,6 +22,7 @@ async function saveCustomer(ctx) {
       return response(
         ctx,
         httpResponse.badRequest,
+        httpResponse.badRequest.message.invalidRequest,
         joiErrorFormatter(error.details)
       );
     }
@@ -33,12 +34,12 @@ async function saveCustomer(ctx) {
     if (!result) {
       return response(
         ctx,
-        httpResponse.badRequest,
-        "Failure on creating new customer record."
+        httpResponse.conflict,
+        __(httpResponse.conflict.message.saveFailed, "customer")
       );
     }
 
-    return response(ctx, httpResponse.success);
+    return response(ctx, httpResponse.success, httpResponse.success.message);
   } catch (exception) {
     return handleExceptionRoutes(ctx, exception, customerReqData);
   }
@@ -60,7 +61,12 @@ async function getCustomer(ctx) {
       customer = await CustomerModel.findAll();
     }
 
-    return response(ctx, httpResponse.success, customer?.data);
+    return response(
+      ctx,
+      httpResponse.success,
+      httpResponse.success.message,
+      customer?.data
+    );
   } catch (exception) {
     return handleExceptionRoutes(ctx, exception, { id: customerId });
   }
@@ -82,22 +88,22 @@ async function patchCustomer(ctx) {
       return response(
         ctx,
         httpResponse.badRequest,
+        httpResponse.badRequest.message.invalidRequest,
         joiErrorFormatter(error.details)
       );
     }
 
-    delete customerReqData.repeat_password;
     const result = await CustomerModel.update(customerId, customerReqData);
 
     if (!result) {
       response(
         ctx,
-        httpResponse.internalServerError,
-        "Failure on updating customer record."
+        httpResponse.conflict,
+        __(httpResponse.conflict.message.updateFailed, "customer")
       );
     }
 
-    return response(ctx, httpResponse.success);
+    return response(ctx, httpResponse.success, httpResponse.success.message);
   } catch (exception) {
     return handleExceptionRoutes(ctx, exception, customerReqData);
   }
@@ -113,7 +119,11 @@ async function deleteCustomer(ctx) {
 
   try {
     if (!customerId) {
-      return response(ctx, httpResponse.badRequest, "Customer ID was not set");
+      return response(
+        ctx,
+        httpResponse.badRequest,
+        __(httpResponse.badRequest.message.notSetKey, "customer ID")
+      );
     }
 
     const result = await CustomerModel.delete(customerId);
@@ -121,12 +131,12 @@ async function deleteCustomer(ctx) {
     if (!result) {
       return response(
         ctx,
-        httpResponse.badRequest,
-        `Cannot delete customer with the given customer ID of ${customerId}`
+        httpResponse.conflict,
+        __(httpResponse.conflict.message.deleteFailed, "customer")
       );
     }
 
-    return response(ctx, httpResponse.success);
+    return response(ctx, httpResponse.success, httpResponse.success.message);
   } catch (exception) {
     return handleExceptionRoutes(ctx, exception, { id: customerId });
   }
@@ -142,7 +152,7 @@ async function loginCustomer(ctx) {
       return response(
         ctx,
         httpResponse.unauthorized,
-        "Invalid username or password"
+        httpResponse.unauthorized.message.invalidLogin
       );
     }
 
@@ -152,14 +162,19 @@ async function loginCustomer(ctx) {
       return response(
         ctx,
         httpResponse.unauthorized,
-        "Invalid username or password"
+        httpResponse.unauthorized.message.invalidLogin
       );
     }
 
     delete customer.password;
     const token = generateToken({ ...customer });
     ctx.set("x-auth-token", token);
-    return response(ctx, httpResponse.success, customer);
+    return response(
+      ctx,
+      httpResponse.success,
+      httpResponse.success.message,
+      customer
+    );
   } catch (exception) {
     return handleExceptionRoutes(ctx, exception, ctx.request.body);
   }
@@ -176,5 +191,5 @@ module.exports = {
   patchCustomer,
   deleteCustomer,
   loginCustomer,
-  customerAccount
+  customerAccount,
 };

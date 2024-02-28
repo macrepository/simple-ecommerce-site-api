@@ -9,7 +9,7 @@ module.exports = function (ctx, next) {
     return response(
       ctx,
       httpResponse.unauthorized,
-      "Access denied. No token key provided"
+      httpResponse.unauthorized.message.noToken
     );
 
   const customerObject = verifyToken(token);
@@ -17,7 +17,7 @@ module.exports = function (ctx, next) {
     return response(
       ctx,
       httpResponse.unauthorized,
-      "Access denied. No token key provided"
+      httpResponse.unauthorized.message.noToken
     );
   }
 

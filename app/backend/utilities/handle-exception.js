@@ -119,13 +119,19 @@ function handleExceptionRoutes(ctx, exception, objectData = null) {
   const error = exceptionErrorFormatter(exception, objectData);
 
   if (error?.badRequestMessage)
-    return response(ctx, httpResponse.badRequest, error.badRequestMessage);
+    return response(
+      ctx,
+      httpResponse.badRequest,
+      httpResponse.badRequest.message.invalidRequest,
+      error.badRequestMessage
+    );
 
   logger.error("handleExceptionRoutes", exception);
 
   return response(
     ctx,
     httpResponse.internalServerError,
+    httpResponse.internalServerError.message,
     error.internalServerErrorMessage
   );
 }
