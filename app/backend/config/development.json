@@ -1,0 +1,11 @@
+{
+    "db": {
+        "dbHost": "",
+        "dbUser": "",
+        "dbPassword": "",
+        "dbName": ""
+    },
+    "port": "",
+    "nodeEnv": "",
+    "jwtPrivateKey": ""
+}

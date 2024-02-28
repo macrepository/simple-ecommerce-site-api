@@ -1,5 +1,5 @@
 const logger = require("./logger");
-const { httpResponse } = require("../config/data");
+const { httpResponse } = require("../constant/data");
 const { response } = require("./http-response");
 
 /**

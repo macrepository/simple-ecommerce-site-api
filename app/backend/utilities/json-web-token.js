@@ -1,6 +1,7 @@
+const config = require("config");
 const jwt = require("jsonwebtoken");
 
-const jwtKey = process.env.JWT_PRIVATE_KEY;
+const jwtKey = config.get("jwtPrivateKey");
 
 /**
  * Generate json web token

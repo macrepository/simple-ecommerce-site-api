@@ -1,5 +1,5 @@
 const CustomerModel = require("./model");
-const { httpResponse } = require("../../config/data");
+const { httpResponse } = require("../../constant/data");
 const { validateCustomer } = require("./helper");
 const { response } = require("../../utilities/http-response");
 const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");

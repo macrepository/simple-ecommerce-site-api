@@ -1,6 +1,6 @@
 const Joi = require("joi");
 const passwordComplexity = require("joi-password-complexity");
-const { password } = require("../../config/data");
+const { password } = require("../../constant/data");
 const _ = require("lodash");
 
 let customerSchema = {

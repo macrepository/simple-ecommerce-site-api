@@ -8,7 +8,7 @@ module.exports = function (app) {
   });
 
   process.on("uncaughtException", (ex) => {
-    logger.error - ("uncaughtException", ex);
+    logger.error("uncaughtException", ex);
   });
 
   process.on("unhandledRejection", (ex) => {

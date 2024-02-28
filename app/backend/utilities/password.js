@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const { password } = require("../config/data");
+const { password } = require("../constant/data");
 
 /**
  * The function `hashPassword` asynchronously generates a salt using bcrypt and then hashes the plain

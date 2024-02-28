@@ -1,4 +1,6 @@
+const config = require("config");
 const { createLogger, format, transports } = require("winston");
+const environment = config.get("nodeEnv");
 
 // Create a logger instance with different file transfort
 const logger = createLogger({
@@ -23,14 +25,14 @@ const logger = createLogger({
     }),
     // Transport for error level logs
     new transports.File({
-        filename: "logs/warn.log",
-        level: "warn",
-      }),
-      // Transport for error level logs
+      filename: "logs/warn.log",
+      level: "warn",
+    }),
+    // Transport for error level logs
     new transports.File({
-        filename: "logs/info.log",
-        level: "info",
-      }),
+      filename: "logs/info.log",
+      level: "info",
+    }),
   ],
 });
 
@@ -38,7 +40,7 @@ const logger = createLogger({
 // If we're not in production then log to the `console` with the format:
 // `${info.level}: ${info.message} JSON.stringify({ ...rest }) `
 //
-if (process.env.NODE_ENV !== "production") {
+if (environment !== "production") {
   logger.add(new transports.Console());
 }
 

@@ -1,6 +1,6 @@
 const { response } = require("../utilities/http-response");
 const { verifyToken } = require("../utilities/json-web-token");
-const { httpResponse } = require("../config/data");
+const { httpResponse } = require("../constant/data");
 
 module.exports = function (ctx, next) {
   const token = ctx.get("x-auth-token");
