@@ -165,10 +165,16 @@ async function loginCustomer(ctx) {
   }
 }
 
+async function customerAccount(ctx) {
+  ctx.body = "access customer account";
+  console.log(ctx.request.body.customer);
+}
+
 module.exports = {
   saveCustomer,
   getCustomer,
   patchCustomer,
   deleteCustomer,
   loginCustomer,
+  customerAccount
 };

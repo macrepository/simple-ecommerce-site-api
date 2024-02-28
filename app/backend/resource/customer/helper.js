@@ -1,9 +1,9 @@
 const Joi = require("joi");
 const passwordComplexity = require("joi-password-complexity");
 const { password } = require("../../config/data");
-const _ = require('lodash');
+const _ = require("lodash");
 
-const customerSchema = {
+let customerSchema = {
   first_name: Joi.string().max(50).required(),
   last_name: Joi.string().max(50).required(),
   date_of_birth: Joi.date().less("now"),
@@ -29,8 +29,8 @@ function validateCustomer(customer, isValidatePassedKeyOnly = false) {
 }
 
 /**
- * 
- * @param {string} email 
+ *
+ * @param {string} email
  * @returns {Object}
  */
 function validateEmail(email) {
