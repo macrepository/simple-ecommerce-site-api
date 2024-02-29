@@ -1,17 +1,13 @@
 const logger = require("../utilities/logger");
 
-// Error Handler
+// Error Handler - It will catch by winston and print logs
 
 module.exports = function (app) {
   app.on("error", (err) => {
-    logger.error("error", err);
-  });
-
-  process.on("uncaughtException", (ex) => {
-    logger.error("uncaughtException", ex);
+    throw err;
   });
 
   process.on("unhandledRejection", (ex) => {
-    logger.error("unhandledRejection", ex);
+    throw ex;
   });
 };

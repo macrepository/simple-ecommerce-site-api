@@ -34,6 +34,7 @@ const logger = createLogger({
       level: "info",
     }),
   ],
+  exceptionHandlers: [new transports.File({ filename: "logs/exceptions.log" })],
 });
 
 //
