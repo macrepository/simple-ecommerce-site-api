@@ -4,7 +4,6 @@ const { validateCustomer } = require("./helper");
 const { response } = require("../../utilities/http-response");
 const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
 const { hashPassword, comparePassword } = require("../../utilities/password");
-const { handleExceptionRoutes } = require("../../utilities/handle-exception");
 const { generateToken } = require("../../utilities/json-web-token");
 const { __ } = require("../../utilities/string-formatter");
 /**
@@ -15,34 +14,30 @@ const { __ } = require("../../utilities/string-formatter");
 async function saveCustomer(ctx) {
   const customerReqData = ctx.request.body;
 
-  try {
-    const { error } = validateCustomer(customerReqData);
+  const { error } = validateCustomer(customerReqData);
 
-    if (error) {
-      return response(
-        ctx,
-        httpResponse.badRequest,
-        httpResponse.badRequest.message.invalidRequest,
-        joiErrorFormatter(error.details)
-      );
-    }
-
-    delete customerReqData.repeat_password;
-    customerReqData.password = await hashPassword(customerReqData.password);
-    const result = await CustomerModel.save(customerReqData);
-
-    if (!result) {
-      return response(
-        ctx,
-        httpResponse.conflict,
-        __(httpResponse.conflict.message.saveFailed, "customer")
-      );
-    }
-
-    return response(ctx, httpResponse.success, httpResponse.success.message);
-  } catch (exception) {
-    return handleExceptionRoutes(ctx, exception, customerReqData);
+  if (error) {
+    return response(
+      ctx,
+      httpResponse.badRequest,
+      httpResponse.badRequest.message.invalidRequest,
+      joiErrorFormatter(error.details)
+    );
   }
+
+  delete customerReqData.repeat_password;
+  customerReqData.password = await hashPassword(customerReqData.password);
+  const result = await CustomerModel.save(customerReqData);
+
+  if (!result) {
+    return response(
+      ctx,
+      httpResponse.conflict,
+      __(httpResponse.conflict.message.saveFailed, "customer")
+    );
+  }
+
+  return response(ctx, httpResponse.success, httpResponse.success.message);
 }
 
 /**
@@ -54,22 +49,18 @@ async function getCustomer(ctx) {
   let customer;
   const customerId = ctx.params.id;
 
-  try {
-    if (customerId) {
-      customer = await CustomerModel.findById(customerId);
-    } else {
-      customer = await CustomerModel.findAll();
-    }
-
-    return response(
-      ctx,
-      httpResponse.success,
-      httpResponse.success.message,
-      customer?.data
-    );
-  } catch (exception) {
-    return handleExceptionRoutes(ctx, exception, { id: customerId });
+  if (customerId) {
+    customer = await CustomerModel.findById(customerId);
+  } else {
+    customer = await CustomerModel.findAll();
   }
+
+  return response(
+    ctx,
+    httpResponse.success,
+    httpResponse.success.message,
+    customer?.data
+  );
 }
 
 /**
@@ -81,32 +72,28 @@ async function patchCustomer(ctx) {
   const customerId = ctx.params.id;
   const customerReqData = ctx.request.body;
 
-  try {
-    const { error } = validateCustomer(customerReqData, true);
+  const { error } = validateCustomer(customerReqData, true);
 
-    if (error) {
-      return response(
-        ctx,
-        httpResponse.badRequest,
-        httpResponse.badRequest.message.invalidRequest,
-        joiErrorFormatter(error.details)
-      );
-    }
-
-    const result = await CustomerModel.update(customerId, customerReqData);
-
-    if (!result) {
-      response(
-        ctx,
-        httpResponse.conflict,
-        __(httpResponse.conflict.message.updateFailed, "customer")
-      );
-    }
-
-    return response(ctx, httpResponse.success, httpResponse.success.message);
-  } catch (exception) {
-    return handleExceptionRoutes(ctx, exception, customerReqData);
+  if (error) {
+    return response(
+      ctx,
+      httpResponse.badRequest,
+      httpResponse.badRequest.message.invalidRequest,
+      joiErrorFormatter(error.details)
+    );
   }
+
+  const result = await CustomerModel.update(customerId, customerReqData);
+
+  if (!result) {
+    response(
+      ctx,
+      httpResponse.conflict,
+      __(httpResponse.conflict.message.updateFailed, "customer")
+    );
+  }
+
+  return response(ctx, httpResponse.success, httpResponse.success.message);
 }
 
 /**
@@ -117,68 +104,60 @@ async function patchCustomer(ctx) {
 async function deleteCustomer(ctx) {
   const customerId = ctx.params.id;
 
-  try {
-    if (!customerId) {
-      return response(
-        ctx,
-        httpResponse.badRequest,
-        __(httpResponse.badRequest.message.notSetKey, "customer ID")
-      );
-    }
-
-    const result = await CustomerModel.delete(customerId);
-
-    if (!result) {
-      return response(
-        ctx,
-        httpResponse.conflict,
-        __(httpResponse.conflict.message.deleteFailed, "customer")
-      );
-    }
-
-    return response(ctx, httpResponse.success, httpResponse.success.message);
-  } catch (exception) {
-    return handleExceptionRoutes(ctx, exception, { id: customerId });
+  if (!customerId) {
+    return response(
+      ctx,
+      httpResponse.badRequest,
+      __(httpResponse.badRequest.message.notSetKey, "customer ID")
+    );
   }
+
+  const result = await CustomerModel.delete(customerId);
+
+  if (!result) {
+    return response(
+      ctx,
+      httpResponse.conflict,
+      __(httpResponse.conflict.message.deleteFailed, "customer")
+    );
+  }
+
+  return response(ctx, httpResponse.success, httpResponse.success.message);
 }
 
 async function loginCustomer(ctx) {
   const { email, password } = ctx.request.body;
 
-  try {
-    const { data: customer } = (await CustomerModel.findByEmail(email)) || {};
+  const { data: customer } = (await CustomerModel.findByEmail(email)) || {};
 
-    if (!customer) {
-      return response(
-        ctx,
-        httpResponse.unauthorized,
-        httpResponse.unauthorized.message.invalidLogin
-      );
-    }
-
-    const validPassword = await comparePassword(password, customer.password);
-
-    if (!validPassword) {
-      return response(
-        ctx,
-        httpResponse.unauthorized,
-        httpResponse.unauthorized.message.invalidLogin
-      );
-    }
-
-    delete customer.password;
-    const token = generateToken({ ...customer });
-    ctx.set("x-auth-token", token);
-
+  if (!customer) {
     return response(
       ctx,
-      httpResponse.success,
-      httpResponse.success.message,
-      customer
+      httpResponse.unauthorized,
+      httpResponse.unauthorized.message.invalidLogin
     );
-  } catch (exception) {
-    return handleExceptionRoutes(ctx, exception, ctx.request.body);
   }
+
+  const validPassword = await comparePassword(password, customer.password);
+
+  if (!validPassword) {
+    return response(
+      ctx,
+      httpResponse.unauthorized,
+      httpResponse.unauthorized.message.invalidLogin
+    );
+  }
+
+  delete customer.password;
+  const token = generateToken({ ...customer });
+  ctx.set("x-auth-token", token);
+
+  return response(
+    ctx,
+    httpResponse.success,
+    httpResponse.success.message,
+    customer
+  );
 }
 
 async function customerAccount(ctx) {
