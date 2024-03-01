@@ -35,15 +35,12 @@ describe("api/customer", () => {
         email: "johndoe@gmail.com",
         password: "yyyyyy1",
         repeat_password: "yyyyyy1",
-      }
-      
+      };
+
       await exec();
       const result = await exec();
 
-      console.log(result.body);
-
       expect(result.status).toBe(409);
-
     });
   });
 });

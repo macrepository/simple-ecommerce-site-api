@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "export NODE_ENV=development && nodemon app.js",
     "deploy": "export NODE_ENV=production && node app.js",
-    "test": "export NODE_ENV=test && jest --watchAll --verbose --coverage"
+    "test": "export NODE_ENV=test && knex migrate:latest && jest --watchAll --verbose --coverage"
   },
   "keywords": [],
   "author": "",
