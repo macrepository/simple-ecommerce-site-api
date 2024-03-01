@@ -34,4 +34,19 @@ module.exports = {
       directory: "./database/seeds",
     },
   },
+  test: {
+    client: "mysql",
+    connection: {
+      host: config.get("db.dbHost"),
+      user: config.get("db.dbUser"),
+      password: config.get("db.dbPassword"),
+      database: config.get("db.dbNameTest"),
+    },
+    migrations: {
+      directory: "./database/migrations",
+    },
+    seeds: {
+      directory: "./database/seeds",
+    },
+  },
 };

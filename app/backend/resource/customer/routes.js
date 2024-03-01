@@ -10,7 +10,7 @@ const { customerAuth } = require("../../middleware/customer-auth");
 const { catchErrors } = require("../../middleware/async-exception-handler");
 const Router = require("@koa/router");
 const router = new Router({
-  prefix: "/customer",
+  prefix: "/api/customer",
 });
 
 router.get("/account", customerAuth, customerAccount);
