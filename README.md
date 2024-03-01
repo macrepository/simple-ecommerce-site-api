@@ -7,6 +7,7 @@ This project showcases the development of a simple ecommerce app to demonstrate 
 ##### Technology Stack:
 
 ###### • Frontend:
+
     ➢ CSS
     ➢ HTML
     ➢ Vue 3
@@ -14,11 +15,13 @@ This project showcases the development of a simple ecommerce app to demonstrate 
     ➢ Axios
 
 ###### • Admin Panel:
+
     ➢ CSS
     ➢ HTML
     ➢ React
 
 ###### • Backend:
+
     ➢ Node.js
     ➢ Koa
     ➢ knex.js
@@ -26,7 +29,6 @@ This project showcases the development of a simple ecommerce app to demonstrate 
     ➢ Redis
     ➢ Jest
     ➢ Joi
-
 
 ## Installation Guide
 
@@ -36,4 +38,7 @@ $ make build
 ## Execute this script if other hosts cannot login to mysql database
 $ ./scripts/mysqllogin
 $ ALTER USER '<your user>'@'%' IDENTIFIED WITH mysql_native_password BY '<your password>';
+
+## Create test table for integration testing
+$ ./scripts/createTestDB
 ```
