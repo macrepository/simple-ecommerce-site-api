@@ -2,4 +2,4 @@
 
 source "${PWD}/.env"
 
-docker exec -it ${PROJECT}_mysql mysql -u${MYSQL_USER} -p"${MYSQL_PASSWORD}" ${MYSQL_DATABASE}
+docker exec -it ${PROJECT}_mysql mysql -uroot -p"${MYSQL_PASSWORD}" ${MYSQL_DATABASE}
