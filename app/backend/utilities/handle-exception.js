@@ -11,27 +11,43 @@ const { response } = require("./http-response");
  */
 function getColumnKeyBySqlErrorMessage(exception, columns) {
   const { sqlMessage } = exception;
-  for (const [key, value] of Object.entries(columns)) {
-    // Check duplicate Entry Case or key and value found in the error message
-    if (
-      checkRegexIfFound(sqlMessage, key) &&
-      checkRegexIfFound(sqlMessage, value)
-    ) {
-      return key;
-    }
+  return findColumnKey(sqlMessage, columns);
+}
 
-    // Check error message that has a pattern of "column 'key'"
-    if (checkRegexIfFound(sqlMessage, `column '${key}'`)) {
-      return key;
-    }
-
-    // Check key if found in error message
-    if (checkRegexIfFound(sqlMessage, key)) {
-      return key;
+/**
+ * Finding the Column key from the SQL Message
+ * @param {string} sqlMessage
+ * @param {Object} columns
+ * @returns
+ */
+function findColumnKey(sqlMessage, columns) {
+  for (const [columnKey, columnValue] of Object.entries(columns)) {
+    // Check duplicate Entry Case or columnKey and columnValue found in the error message
+    if (Array.isArray(columnValue)) {
+      const nestedColumnKey = findColumnKey(sqlMessage, columnValue[0]);
+      if (nestedColumnKey !== null) {
+        return nestedColumnKey;
+      }
+    } else {
+      if (isErrorForColumn(sqlMessage, columnKey)) {
+        return columnKey;
+      }
     }
   }
 
   return null;
+}
+
+/**
+ * Check patterns for the SQL message if the column key exist
+ * @param {string} sqlMessage
+ * @param {string} columnKey
+ * @returns
+ */
+function isErrorForColumn(sqlMessage, columnKey) {
+  const patterns = [`Column '${columnKey}'`, columnKey];
+
+  return patterns.some((pattern) => checkRegexIfFound(sqlMessage, pattern));
 }
 
 /**
@@ -42,7 +58,7 @@ function getColumnKeyBySqlErrorMessage(exception, columns) {
  * @returns {boolean}
  */
 function checkRegexIfFound(value, pattern) {
-  const regex = new RegExp(pattern);
+  const regex = new RegExp(pattern, "i");
 
   return regex.test(value);
 }
