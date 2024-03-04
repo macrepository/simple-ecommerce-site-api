@@ -22,8 +22,8 @@ exports.up = function (knex) {
     table
       .enu("gender", ["male", "female", "others"])
       .comment("Customer Gender");
-    table.string("address", 255).comment("Customer Address");
-    table.string("zip_code", 20).comment("Customer Zip Code");
+    table.string("address", 255).notNullable().comment("Customer Address");
+    table.string("zip_code", 20).notNullable().comment("Customer Zip Code");
     table
       .string("email", 50)
       .notNullable()

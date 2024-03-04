@@ -14,7 +14,7 @@ exports.up = function (knex) {
       .comment("User Email Address");
     table.string("username", 20).notNullable().comment("User Username");
     table.string("password", 255).notNullable().comment("User Login Password");
-    table.enu("role", ["admin", "order_management", "product_management"]);
+    table.enu("role", ["admin", "order_management", "product_management"]).notNullable().comment("User Admin Role");
     table.timestamp(true, true);
   });
 };

@@ -17,6 +17,7 @@ exports.up = function (knex) {
     table.float("grandtotal", 9, 2).notNullable().comment("Payment Grandtotal");
     table
       .enu("status", ["paid", "declined", "system_error"])
+      .notNullable()
       .comment("Payment Status");
     table.timestamp(true, true);
   });

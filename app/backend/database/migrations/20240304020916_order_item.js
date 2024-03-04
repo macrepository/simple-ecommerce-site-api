@@ -15,7 +15,7 @@ exports.up = function (knex) {
     table.string("name", 50).notNullable().comment("Product Name");
     table.float("price", 9, 2).notNullable().comment("Product Price");
     table.integer("quantity", 6).notNullable().comment("Product Quantity");
-    table.integer("product_id").comment("Product ID");
+    table.integer("product_id").notNullable().comment("Product ID");
     table
       .float("row_total", 9, 2)
       .notNullable()
