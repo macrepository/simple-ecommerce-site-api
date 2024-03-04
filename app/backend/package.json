@@ -6,7 +6,13 @@
   "scripts": {
     "dev": "export NODE_ENV=development && nodemon app.js",
     "deploy": "export NODE_ENV=production && node app.js",
-    "test": "export NODE_ENV=test && knex migrate:latest && jest --watchAll --verbose --coverage"
+    "test": "export NODE_ENV=test && knex migrate:latest && jest --watchAll --verbose --coverage",
+    "migrate:init": "knex init",
+    "migrate:make": "knex migrate:make",
+    "migrate:latest": "knex migrate:latest",
+    "migrate:rollback": "knex migrate:rollback",
+    "seed:make": "knex seed:make",
+    "seed:run": "knex seed:run"
   },
   "keywords": [],
   "author": "",
