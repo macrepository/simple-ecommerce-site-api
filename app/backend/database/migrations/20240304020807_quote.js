@@ -1,0 +1,42 @@
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.up = function (knex) {
+  return knex.schema.createTable("quote", (table) => {
+    table.increments("id").primary().comment("Quote ID");
+    table.integer("customer_id").unsigned().comment("Customer Reference");
+    table.foreign("customer_id").references("customer.id");
+    table
+      .boolean("is_active")
+      .notNullable()
+      .comment("Qoute/Cart Active Status");
+    table.string("first_name", 50).notNullable().comment("Customer First Name");
+    table.string("last_name", 50).notNullable().comment("Customer Last Name");
+    table.date("date_of_birth").comment("Customer Date of Birth");
+    table
+      .enu("gender", ["male", "female", "others"])
+      .comment("Customer Gender");
+    table.string("address", 255).comment("Customer Address");
+    table.string("zip_code", 20).comment("Customer Zip Code");
+    table
+      .string("email", 50)
+      .notNullable()
+      .unique()
+      .comment("Customer Email Address");
+    table.float("subtotal", 9, 2).notNullable().comment("Quote/Cart Subtotal");
+    table
+      .float("grandtotal", 9, 2)
+      .notNullable()
+      .comment("Quote/Cart Grandtotal");
+    table.timestamps(true, true);
+  });
+};
+
+/**
+ * @param { import("knex").Knex } knex
+ * @returns { Promise<void> }
+ */
+exports.down = function (knex) {
+  return knex.schema.dropTableIfExists("quote");
+};
