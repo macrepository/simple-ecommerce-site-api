@@ -5,8 +5,13 @@
 exports.up = function (knex) {
   return knex.schema.createTable("quote_item", (table) => {
     table.increments("id").primary().comment("Quote Item ID");
-    table.integer("quote_id").unsigned().comment("Quote Reference");
-    table.foreign("quote_id").references("quote.id");
+    table
+      .integer("quote_id")
+      .unsigned()
+      .comment("Quote Reference")
+      .references("id")
+      .inTable("quote")
+      .onDelete("CASCADE");
     table.string("name", 50).notNullable().comment("Product Name");
     table.float("price", 9, 2).notNullable().comment("Product Price");
     table.integer("quantity", 6).notNullable().comment("Product Quantity");

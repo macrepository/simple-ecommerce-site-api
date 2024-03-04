@@ -5,8 +5,13 @@
 exports.up = function (knex) {
   return knex.schema.createTable("quote", (table) => {
     table.increments("id").primary().comment("Quote ID");
-    table.integer("customer_id").unsigned().comment("Customer Reference");
-    table.foreign("customer_id").references("customer.id");
+    table
+      .integer("customer_id")
+      .unsigned()
+      .comment("Customer Reference")
+      .references("id")
+      .inTable("customer")
+      .onDelete("CASCADE");
     table
       .boolean("is_active")
       .notNullable()
@@ -38,5 +43,8 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-  return knex.schema.dropTableIfExists("quote");
+  return knex.schema
+    .dropTableIfExists("payment_item")
+    .dropTableIfExists("quote_item")
+    .dropTableIfExists("quote");
 };
