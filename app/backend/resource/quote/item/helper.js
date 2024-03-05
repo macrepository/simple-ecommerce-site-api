@@ -1,12 +1,12 @@
 const Joi = require("joi");
 
 const quoteItemSchema = {
-  quote_id: Joi.number(),
+  quote_id: Joi.number().greater(0),
   name: Joi.string().max(50).required(),
-  price: Joi.number().max(999999999).precision(2).required(),
-  quantity: Joi.number().max(999999).required(),
-  product_id: Joi.number().required(),
-  row_total: Joi.number().max(999999999).precision(2).required(),
+  price: Joi.number().greater(0).max(9999999).precision(2).required(),
+  quantity: Joi.number().min(1).max(999999).required(),
+  product_id: Joi.number().greater(0).required(),
+  row_total: Joi.number().greater(0).max(9999999).precision(2).required(),
 };
 
 function validateQuoteItem(quoteItemData) {
@@ -17,5 +17,5 @@ function validateQuoteItem(quoteItemData) {
 
 module.exports = {
   quoteItemSchema,
-  validateQuoteItem
+  validateQuoteItem,
 };
