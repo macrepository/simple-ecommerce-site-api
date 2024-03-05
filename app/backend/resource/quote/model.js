@@ -50,6 +50,18 @@ class QuoteModel {
   }
 
   /**
+   * The function findByEmail asynchronously retrieves a quote record based on the provided email
+   * address and returns the data in the format specified by the CustomerModel.
+   * @param {string} email 
+   * @returns {Object}
+   */
+  async findByEmail(email) {
+    this.data = await this.create().first().where("email", email);
+
+    return this;
+  }
+
+  /**
    * Get Quote Items
    * @returns {QuoteItemModel}
    */
