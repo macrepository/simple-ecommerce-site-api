@@ -1,9 +1,8 @@
 {
     "db": {
-        "dbHost": "",
-        "dbUser": "",
-        "dbPassword": "",
-        "dbName": "",
+        "dbHost": "simple-ecommerce-site_mysql",
+        "dbUser": "ecommerce",
+        "dbPassword": "pwdnac255",
         "dbNameTest": "simple-ecommerce-site-test"
     },
     "port": "",

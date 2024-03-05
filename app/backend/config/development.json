@@ -3,8 +3,7 @@
         "dbHost": "",
         "dbUser": "",
         "dbPassword": "",
-        "dbName": "",
-        "dbNameTest": ""
+        "dbName": ""
     },
     "port": "",
     "nodeEnv": "",
