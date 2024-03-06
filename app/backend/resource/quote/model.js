@@ -1,11 +1,14 @@
 const QuoteItemModel = require("./item/model");
+const AbstractClass = require("../../utilities/abstract-class");
 const knex = require("../../database/db");
 const tableQuote = "quote";
 
-class QuoteModel {
-  constructor(quoteData) {
-    this.data = quoteData;
-    this.item = QuoteItemModel;
+const quoteItemModelInstance = new QuoteItemModel();
+
+class QuoteModel extends AbstractClass {
+  constructor() {
+    super();
+    this.item = quoteItemModelInstance;
   }
 
   /**
@@ -98,6 +101,15 @@ class QuoteModel {
       return result;
     });
   }
+
+  /**
+   * This asynchronous function deletes a record with a specific ID from a database table.
+   * @param {Number} quoteId
+   * @returns {Promise<Number>}
+   */
+  async delete(quoteId) {
+    return await this.create().where("id", quoteId).delete();
+  }
 }
 
-module.exports = new QuoteModel();
+module.exports = QuoteModel;

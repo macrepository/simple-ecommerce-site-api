@@ -4,6 +4,7 @@ const { httpResponse } = require("../../constant/data");
 const { response } = require("../../utilities/http-response");
 const { validateQuote, ValidateQuoteId } = require("./helper");
 const QuoteModel = require("./model");
+const quoteModelInstance = new QuoteModel();
 
 async function saveQuote(ctx) {
   const quoteReqData = ctx.request.body;
@@ -18,7 +19,7 @@ async function saveQuote(ctx) {
     );
   }
 
-  const quoteId = await QuoteModel.save(quoteReqData);
+  const quoteId = await quoteModelInstance.save(quoteReqData);
 
   if (!quoteId) {
     return response(
@@ -49,7 +50,7 @@ async function getQuote(ctx) {
     );
   }
 
-  const quote = await QuoteModel.findById(quoteId);
+  const quote = await quoteModelInstance.findById(quoteId);
 
   if (!quote.data?.id) {
     return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
@@ -94,13 +95,31 @@ async function updateQuote(ctx) {
     );
   }
 
-  await QuoteModel.update(quoteId, quoteReqData);
+  await quoteModelInstance.update(quoteId, quoteReqData);
 
   return response(ctx, httpResponse.success, httpResponse.success.message);
 }
 
 async function deleteQuote(ctx) {
-  ctx.body = "deleteQuote";
+  const quoteId = ctx.params.id;
+  const { error } = ValidateQuoteId(quoteId);
+
+  if (error) {
+    return response(
+      ctx,
+      httpResponse.badRequest,
+      httpResponse.badRequest.message.invalidRequest,
+      joiErrorFormatter(error.details)
+    );
+  }
+
+  const result = await quoteModelInstance.delete(quoteId);
+
+  if (!result) {
+    return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
+  }
+
+  return response(ctx, httpResponse.success, httpResponse.success.message);
 }
 
 module.exports = {
