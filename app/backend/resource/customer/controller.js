@@ -6,6 +6,8 @@ const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
 const { hashPassword, comparePassword } = require("../../utilities/password");
 const { generateToken } = require("../../utilities/json-web-token");
 const { __ } = require("../../utilities/string-formatter");
+
+const customerModelInstance = new CustomerModel();
 /**
  * Save Customer details
  * @param {Object} ctx
@@ -27,7 +29,7 @@ async function saveCustomer(ctx) {
 
   delete customerReqData.repeat_password;
   customerReqData.password = await hashPassword(customerReqData.password);
-  const result = await CustomerModel.save(customerReqData);
+  const result = await customerModelInstance.save(customerReqData);
 
   if (!result) {
     return response(
@@ -50,9 +52,9 @@ async function getCustomer(ctx) {
   const customerId = ctx.params.id;
 
   if (customerId) {
-    customer = await CustomerModel.findById(customerId);
+    customer = await customerModelInstance.findById(customerId);
   } else {
-    customer = await CustomerModel.findAll();
+    customer = await customerModelInstance.findAll();
   }
 
   return response(
@@ -83,7 +85,10 @@ async function patchCustomer(ctx) {
     );
   }
 
-  const result = await CustomerModel.update(customerId, customerReqData);
+  const result = await customerModelInstance.update(
+    customerId,
+    customerReqData
+  );
 
   if (!result) {
     response(
@@ -112,7 +117,7 @@ async function deleteCustomer(ctx) {
     );
   }
 
-  const result = await CustomerModel.delete(customerId);
+  const result = await customerModelInstance.delete(customerId);
 
   if (!result) {
     return response(
@@ -128,7 +133,7 @@ async function deleteCustomer(ctx) {
 async function loginCustomer(ctx) {
   const { email, password } = ctx.request.body;
 
-  const { data: customer } = (await CustomerModel.findByEmail(email)) || {};
+  const customer = (await customerModelInstance.findByEmail(email)).getData();
 
   if (!customer) {
     return response(

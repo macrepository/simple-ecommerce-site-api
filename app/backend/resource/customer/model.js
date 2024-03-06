@@ -1,10 +1,10 @@
+const AbstractClass = require("../../utilities/abstract-class");
 const knex = require("../../database/db");
 const tableCustomer = "customer";
-const { returnModelData } = require("../../utilities/object-relation-mapping");
 
-class CustomerModel {
-  constructor(customerData) {
-    this.data = customerData;
+class CustomerModel extends AbstractClass {
+  constructor() {
+    super();
   }
 
   /**
@@ -17,8 +17,8 @@ class CustomerModel {
 
   /**
    * The `save` function asynchronously inserts a customer record after creating a new record.
-   * @param {*} customer 
-   * @returns {Array}
+   * @param {Object} customer
+   * @returns {Promise<number[]>}
    */
   async save(customer) {
     return await this.create().insert(customer);
@@ -27,58 +27,56 @@ class CustomerModel {
   /**
    * The `findAll` function asynchronously retrieves all customers and returns their data in a specific
    * model format.
-   * @returns {Array}
+   * @returns {Promise<this>}
    */
   async findAll() {
-    const customers = await this.create();
+    this.data = await this.create();
 
-    return returnModelData(CustomerModel, customers);
+    return this;
   }
 
   /**
    * The function findById asynchronously retrieves a customer by their ID and returns the data in the
    * format specified by the CustomerModel.
-   * @param {*} id 
-   * @returns {Object}
+   * @param {Number} id
+   * @returns {Promise<this>}
    */
   async findById(id) {
-    const customer = await this.create().first().where("id", id);
+    this.data = await this.create().first().where("id", id);
 
-    return returnModelData(CustomerModel, customer);
+    return this;
   }
 
   /**
    * The function findByEmail asynchronously retrieves a customer record based on the provided email
    * address and returns the data in the format specified by the CustomerModel.
-   * @param {string} email 
-   * @returns {Object}
+   * @param {string} email
+   * @returns {Promise<this>}
    */
   async findByEmail(email) {
-    const customer = await this.create().first().where("email", email);
+    this.data = await this.create().first().where("email", email);
 
-    return returnModelData(CustomerModel, customer);
+    return this;
   }
-
 
   /**
    * The `update` function asynchronously updates a customer record with the specified id.
-   * @param {*} id 
-   * @param {Object} customer 
-   * @returns {Array}
+   * @param {Number} id
+   * @param {Object} customer
+   * @returns {Promise<Number>}
    */
   async update(id, customer) {
     return await this.create().where("id", id).update(customer);
   }
 
-  
   /**
    * This asynchronous function deletes a record with a specific ID from a database table.
-   * @param {*} id 
-   * @returns {Number|null}
+   * @param {Number} id
+   * @returns {Promise<Number|null>}
    */
   async delete(id) {
     return await this.create().where("id", id).delete();
   }
 }
 
-module.exports = new CustomerModel();
+module.exports = CustomerModel;

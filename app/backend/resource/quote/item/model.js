@@ -1,9 +1,10 @@
+const AbstractClass = require("../../../utilities/abstract-class");
 const knex = require("../../../database/db");
 const tableQuoteItem = "quote_item";
 
-class QuoteItemModel {
-  constructor(quoteItemData) {
-    this.data = quoteItemData;
+class QuoteItemModel extends AbstractClass {
+  constructor() {
+    super();
   }
 
   /**
@@ -74,4 +75,4 @@ class QuoteItemModel {
   }
 }
 
-module.exports = new QuoteItemModel();
+module.exports = QuoteItemModel;
