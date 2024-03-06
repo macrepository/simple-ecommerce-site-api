@@ -2,9 +2,12 @@ const moment = require("moment");
 const QuoteItemModel = require("../../../../resource/quote/item/model");
 const QuoteModel = require("../../../../resource/quote/model");
 const request = require("supertest");
-let server;
+
+const quoteModelInstance = new QuoteModel();
+const quoteItemModelInstance = new QuoteItemModel();
 
 describe("/api/quote", () => {
+  let server;
   let quoteData;
 
   beforeEach(() => {
@@ -42,8 +45,8 @@ describe("/api/quote", () => {
 
   afterEach(async () => {
     await server.close();
-    await QuoteItemModel.create().delete();
-    await QuoteModel.create().delete();
+    await quoteItemModelInstance.create().delete();
+    await quoteModelInstance.create().delete();
   });
 
   const longString = (length) => new Array(length + 1).join("a");
@@ -137,9 +140,11 @@ describe("/api/quote", () => {
     );
 
     it("should return 409 status if the email is already exist to the database", async () => {
-      await QuoteModel.save(quoteData);
+      await quoteModelInstance.save(quoteData);
       const res = await exec(quoteData);
-      const { data: quote } = await QuoteModel.findByEmail(quoteData.email);
+      const quote = (
+        await quoteModelInstance.findByEmail(quoteData.email)
+      ).getData();
 
       expect(quote.email).toBe(quoteData.email);
       expect(res.status).toBe(409);
@@ -151,10 +156,10 @@ describe("/api/quote", () => {
     });
 
     it("should return 409 status if no quote ID return after saving to the DB", async () => {
-      const originalSaveFn = QuoteModel.save;
-      QuoteModel.save = jest.fn(quoteData).mockReturnValue();
+      const originalSaveFn = QuoteModel.prototype.save;
+      QuoteModel.prototype.save = jest.fn(quoteData).mockReturnValue();
       const res = await exec(quoteData);
-      QuoteModel.save = originalSaveFn;
+      QuoteModel.prototype.save = originalSaveFn;
 
       expect(res.status).toBe(409);
       expect(res.body).toMatchObject({
@@ -206,7 +211,7 @@ describe("/api/quote", () => {
     });
 
     it("Should return 200 if quote ID is valid and returned quote data", async () => {
-      quoteId = await QuoteModel.save(quoteData);
+      quoteId = await quoteModelInstance.save(quoteData);
       const res = await exec();
 
       expect(res.status).toBe(200);
@@ -277,12 +282,10 @@ describe("/api/quote", () => {
 
     it("Should return 409 if the email is already exist in the database", async () => {
       const { items, ...purelyQuoteData } = quoteData;
-      const savedQuoteID = await QuoteModel.save(purelyQuoteData);
+      quoteId = await quoteModelInstance.save(purelyQuoteData);
 
       purelyQuoteData.email = "a@gmail.com";
-      await QuoteModel.save(purelyQuoteData);
-
-      quoteId = savedQuoteID;
+      await quoteModelInstance.save(purelyQuoteData);
 
       const res = await exec(purelyQuoteData);
 
@@ -295,8 +298,7 @@ describe("/api/quote", () => {
     });
 
     it("Should return 500 if anything goes wrong in the process like no item ID is passed", async () => {
-      const savedQuoteID = await QuoteModel.save(quoteData);
-      quoteId = savedQuoteID;
+      quoteId = await quoteModelInstance.save(quoteData);
 
       const res = await exec(quoteData);
 
@@ -309,11 +311,12 @@ describe("/api/quote", () => {
     });
 
     it("Should return 200 if successfully saved to the database", async () => {
-      const savedQuoteID = await QuoteModel.save(quoteData);
-      quoteId = savedQuoteID;
+      quoteId = await quoteModelInstance.save(quoteData);
 
       quoteData.first_name = "mark";
-      const { data: items } = await QuoteItemModel.findByQuoteID(savedQuoteID);
+      const items = (
+        await quoteItemModelInstance.findByQuoteID(quoteId)
+      ).getData();
       items.map((item) => {
         delete item.created_at;
         delete item.updated_at;
@@ -322,12 +325,87 @@ describe("/api/quote", () => {
       });
 
       const res = await exec({ ...quoteData, items });
-      const editedQuoteData = await QuoteModel.findById(savedQuoteID);
+      const editedQuoteData = await quoteModelInstance.findById(quoteId);
       const editedQuoteItems = await editedQuoteData.getItems();
 
       expect(editedQuoteData.data.first_name).toBe("mark");
       expect(editedQuoteItems.data[0].name).toBe("edited");
       expect(editedQuoteItems.data[1].name).toBe("edited");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        code: "success",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+  });
+
+  describe("DELETE /", () => {
+    // Should return 400 status if the quote ID is invalid
+    // Should return 404 status if the quote ID is not in the database
+    // Should return 500 status if something goes wrong during the process
+    // Should return 200 status if deletion is successfull
+
+    let quoteId;
+    const exec = () => request(server).delete(`/api/quote/${quoteId}`);
+
+    it("Should return 400 status if the quote ID is invalid ", async () => {
+      quoteId = 0;
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
+    it("Should return 404 status if the quote ID is not in the database", async () => {
+      quoteId = 1;
+
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body).toMatchObject({
+        code: "not_found",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("Should return 500 status if something goes wrong during the process", async () => {
+      quoteId = 1;
+      const originalDeleteMethod = QuoteModel.prototype.delete;
+      QuoteModel.prototype.delete = jest
+        .fn()
+        .mockRejectedValue(new Error("test"));
+
+      const res = await exec();
+
+      QuoteModel.prototype.delete = originalDeleteMethod;
+
+      expect(res.status).toBe(500);
+      expect(res.body).toMatchObject({
+        code: "internal_server_error",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
+    it("Should return 200 status if deletion is successfull", async () => {
+      quoteId = await quoteModelInstance.save(quoteData);
+
+      const res = await exec();
+
+      const quoteDataFromDb = (
+        await quoteModelInstance.findById(quoteId)
+      ).getData();
+
+      expect(quoteId).toBeGreaterThan(0);
+      expect(quoteDataFromDb).toBeNull();
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
