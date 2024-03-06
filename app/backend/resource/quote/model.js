@@ -94,11 +94,7 @@ class QuoteModel extends AbstractClass {
         updateQuoteItem = await this.item.bulkUpdate(items, trx);
       }
 
-      const result = updateQuote === 1 && updateQuoteItem.every((r) => r === 1);
-
-      if (!result) throw new Error("Unable to update quote data.");
-
-      return result;
+      return updateQuote === 1 && updateQuoteItem.every((r) => r === 1);
     });
   }
 

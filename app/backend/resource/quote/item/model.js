@@ -65,7 +65,10 @@ class QuoteItemModel extends AbstractClass {
       const itemId = item.id;
       delete item.id;
 
-      const query = this.create().where("id", itemId).update(item);
+      const query = this.create()
+        .where("id", itemId)
+        .andWhere("quote_id", item.quote_id)
+        .update(item);
       if (trx) query.transacting(trx);
 
       return query;

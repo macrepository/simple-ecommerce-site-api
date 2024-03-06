@@ -95,7 +95,10 @@ async function updateQuote(ctx) {
     );
   }
 
-  await quoteModelInstance.update(quoteId, quoteReqData);
+  const result = await quoteModelInstance.update(quoteId, quoteReqData);
+  if (!result) {
+    return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
+  }
 
   return response(ctx, httpResponse.success, httpResponse.success.message);
 }
