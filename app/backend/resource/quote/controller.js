@@ -2,7 +2,7 @@ const { __ } = require("../../utilities/string-formatter");
 const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
 const { httpResponse } = require("../../constant/data");
 const { response } = require("../../utilities/http-response");
-const { validateQuote } = require("./helper");
+const { validateQuote, ValidateQuoteId } = require("./helper");
 const QuoteModel = require("./model");
 
 async function saveQuote(ctx) {
@@ -38,15 +38,23 @@ async function saveQuote(ctx) {
 
 async function getQuote(ctx) {
   const quoteId = ctx.params.id;
+  const { error } = ValidateQuoteId(quoteId);
 
-  if (!quoteId) {
+  if (error) {
     return response(
       ctx,
       httpResponse.badRequest,
-      __(httpResponse.badRequest.message.notSetKey, "quote ID")
+      httpResponse.badRequest.message.invalidRequest,
+      joiErrorFormatter(error.details)
     );
   }
+
   const quote = await QuoteModel.findById(quoteId);
+
+  if (!quote.data?.id) {
+    return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
+  }
+
   const items = await quote.getItems();
   const quoteData = {
     ...quote?.data,
@@ -62,7 +70,33 @@ async function getQuote(ctx) {
 }
 
 async function updateQuote(ctx) {
-  ctx.body = "updateQuote";
+  const quoteId = ctx.params.id;
+  const { error } = ValidateQuoteId(quoteId);
+
+  if (error) {
+    return response(
+      ctx,
+      httpResponse.badRequest,
+      httpResponse.badRequest.message.invalidRequest,
+      joiErrorFormatter(error.details)
+    );
+  }
+
+  const quoteReqData = ctx.request.body;
+  const { error: quoteError } = validateQuote(quoteReqData);
+
+  if (quoteError) {
+    return response(
+      ctx,
+      httpResponse.badRequest,
+      httpResponse.badRequest.message.invalidRequest,
+      joiErrorFormatter(quoteError.details)
+    );
+  }
+
+  await QuoteModel.update(quoteId, quoteReqData);
+
+  return response(ctx, httpResponse.success, httpResponse.success.message);
 }
 
 async function deleteQuote(ctx) {
