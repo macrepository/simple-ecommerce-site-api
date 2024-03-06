@@ -77,7 +77,6 @@ describe("/api/quote", () => {
   ];
 
   describe("POST /", () => {
-    // TODO: Should return 500 if anything goes wrong in the process
     const exec = (payload) => request(server).post("/api/quote/").send(payload);
 
     describe.each(invalidReqQouteValues)(
@@ -169,6 +168,23 @@ describe("/api/quote", () => {
       });
     });
 
+    it("Should return 500 if anything goes wrong in the process", async () => {
+      const originalFn = QuoteModel.prototype.save;
+      QuoteModel.prototype.save = jest
+        .fn()
+        .mockRejectedValue(new Error("something happen"));
+      const res = await exec(quoteData);
+
+      QuoteModel.prototype.save = originalFn;
+
+      expect(res.status).toBe(500);
+      expect(res.body).toMatchObject({
+        code: "internal_server_error",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
     it("should return 200 status if the quote was succesfully saved to the database", async () => {
       const res = await exec(quoteData);
 
@@ -182,7 +198,6 @@ describe("/api/quote", () => {
   });
 
   describe("GET /", () => {
-    // TODO: Should return 500 if anything goes wrong in the process
     let quoteId = 0;
     const exec = () => request(server).get(`/api/quote/${quoteId}`);
 
@@ -210,6 +225,25 @@ describe("/api/quote", () => {
       expect(res.body).toHaveProperty("body");
     });
 
+    it("Should return 500 if something goes wrong in the process", async () => {
+      quoteId = 1;
+      const originalFn = QuoteModel.prototype.findById;
+      QuoteModel.prototype.findById = jest
+        .fn()
+        .mockRejectedValue(new Error("something happen"));
+
+      const res = await exec();
+
+      QuoteModel.prototype.findById = originalFn;
+
+      expect(res.status).toBe(500);
+      expect(res.body).toMatchObject({
+        code: "internal_server_error",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
     it("Should return 200 if quote ID is valid and returned quote data", async () => {
       quoteId = await quoteModelInstance.save(quoteData);
       const res = await exec();
@@ -227,14 +261,6 @@ describe("/api/quote", () => {
   });
 
   describe("PATCH /", () => {
-    /**
-     * Should return 400 if the quote ID is invalid
-     * Should return 400 if the quote data per field is invalid
-     * Should return 409 if the email is already exist in the database
-     * Should return 500 if anything goes wrong in the process
-     * Should return 200 if successfully saved to the database
-     *
-     */
     let quoteId;
     const exec = (payload) =>
       request(server).patch(`/api/quote/${quoteId}`).send(payload);
@@ -280,6 +306,40 @@ describe("/api/quote", () => {
       }
     );
 
+    describe.each(invalidReqQouteItemValues)(
+      "Validation tests for request quote item data",
+      (field, invalidValues) => {
+        test.each(invalidValues)(
+          `Should return 400 status if the request ${field} is %s`,
+          async (invalidValue) => {
+            const modifiedData = {
+              ...quoteData,
+              items: [
+                {
+                  ...quoteData.items[0],
+                  [field]: invalidValue,
+                },
+              ],
+            };
+
+            const res = await exec(modifiedData);
+
+            expect(res.status).toBe(400);
+            expect(res.body).toMatchObject({
+              code: "bad_request",
+              message: expect.any(String),
+              body: expect.arrayContaining([
+                expect.objectContaining({
+                  field: "items",
+                  message: expect.any(String),
+                }),
+              ]),
+            });
+          }
+        );
+      }
+    );
+
     it("Should return 409 if the email is already exist in the database", async () => {
       const { items, ...purelyQuoteData } = quoteData;
       quoteId = await quoteModelInstance.save(purelyQuoteData);
@@ -297,7 +357,24 @@ describe("/api/quote", () => {
       });
     });
 
-    it("Should return 500 if anything goes wrong in the process like no item ID is passed", async () => {
+    it("Should return 404 if the quote ID is not found in the database", async () => {
+      quoteId = 1;
+      quoteData.items[0].id = 1;
+      quoteData.items[0].quote_id = quoteId;
+      quoteData.items[1].id = 2;
+      quoteData.items[1].quote_id = quoteId;
+
+      const res = await exec(quoteData);
+
+      expect(res.status).toBe(404);
+      expect(res.body).toMatchObject({
+        code: "not_found",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("Should return 500 if anything goes wrong in the process like no item_id property in the payload is passed", async () => {
       quoteId = await quoteModelInstance.save(quoteData);
 
       const res = await exec(quoteData);
@@ -342,11 +419,6 @@ describe("/api/quote", () => {
   });
 
   describe("DELETE /", () => {
-    // Should return 400 status if the quote ID is invalid
-    // Should return 404 status if the quote ID is not in the database
-    // Should return 500 status if something goes wrong during the process
-    // Should return 200 status if deletion is successfull
-
     let quoteId;
     const exec = () => request(server).delete(`/api/quote/${quoteId}`);
 
@@ -381,7 +453,7 @@ describe("/api/quote", () => {
       const originalDeleteMethod = QuoteModel.prototype.delete;
       QuoteModel.prototype.delete = jest
         .fn()
-        .mockRejectedValue(new Error("test"));
+        .mockRejectedValue(new Error("something happen"));
 
       const res = await exec();
 
