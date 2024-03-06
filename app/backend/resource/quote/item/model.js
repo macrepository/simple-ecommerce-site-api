@@ -1,7 +1,4 @@
 const knex = require("../../../database/db");
-const {
-  returnModelData,
-} = require("../../../utilities/object-relation-mapping");
 const tableQuoteItem = "quote_item";
 
 class QuoteItemModel {
@@ -21,7 +18,7 @@ class QuoteItemModel {
    * The `save` function asynchronously inserts a quote item record
    * @param {Object} quoteItem
    * @param {import("knex").Knex.Transaction|null} trx
-   * @returns {number[]}
+   * @returns {Promise<Number[]>}
    */
   async save(quoteItem, trx = null) {
     let query = this.create().insert(quoteItem);
@@ -30,9 +27,50 @@ class QuoteItemModel {
     return await query;
   }
 
+  /**
+   * This function retrieves quote items based on a given quote ID and returns the data in a specific
+   * model format.
+   * @param {Number} quoteId
+   * @returns {Promise<this>}
+   */
   async findByQuoteID(quoteId) {
-    const quoteItems = await this.create().where("quote_id", quoteId);
-    return returnModelData(QuoteItemModel, quoteItems);
+    this.data = await this.create().where("quote_id", quoteId);
+    return this;
+  }
+
+  /**
+   * The `update` function asynchronously update a quote item record
+   * @param {Number} itemId
+   * @param {Object} quoteItem
+   * @param {import("knex").Knex.Transaction|null} trx
+   * @returns {Promise<Number>}
+   */
+  async update(itemId, quoteItem, trx = null) {
+    let query = this.create().where("id", itemId).insert(quoteItem);
+    if (trx) query.transacting(trx);
+
+    return await query;
+  }
+
+  /**
+   * The `bulkUpdate` function asynchronously updates multiple items in a database transaction if
+   * provided.
+   * @param {Array<Object>} items
+   * @param {import("knex").Knex.Transaction|null} trx
+   * @return {Promise<Number[]>}
+   */
+  async bulkUpdate(items, trx = null) {
+    const updateItems = items.map((item) => {
+      const itemId = item.id;
+      delete item.id;
+
+      const query = this.create().where("id", itemId).update(item);
+      if (trx) query.transacting(trx);
+
+      return query;
+    });
+
+    return await Promise.all(updateItems);
   }
 }
 
