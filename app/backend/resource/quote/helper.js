@@ -4,6 +4,7 @@ const moment = require("moment");
 const Joi = require("joi");
 
 const quoteSchema = {
+  id: Joi.number().greater(0).label("Quote ID"),
   customer_id: Joi.number().greater(0).required(),
   is_active: Joi.boolean().required(),
   first_name: Joi.string().max(50).required(),
@@ -36,6 +37,13 @@ function validateQuote(quoteData) {
   return schema.validate(quoteData, { abortEarly: false });
 }
 
+function ValidateQuoteId(quoteId) {
+  const schema = quoteSchema.id;
+
+  return schema.validate(quoteId);
+}
+
 module.exports = {
   validateQuote,
+  ValidateQuoteId
 };
