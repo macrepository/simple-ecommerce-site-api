@@ -92,9 +92,8 @@ async function getCustomer(ctx) {
  */
 async function patchCustomer(ctx) {
   const customerId = ctx.params.id;
-  const customerReqData = ctx.request.body;
 
-  const { error } = validateCustomer(customerReqData, true);
+  const { error } = validateCustomerId(customerId);
 
   if (error) {
     return response(
@@ -105,17 +104,26 @@ async function patchCustomer(ctx) {
     );
   }
 
+  const customerReqData = ctx.request.body;
+
+  const { error: errorReq } = validateCustomer(customerReqData, true);
+
+  if (errorReq) {
+    return response(
+      ctx,
+      httpResponse.badRequest,
+      httpResponse.badRequest.message.invalidRequest,
+      joiErrorFormatter(errorReq.details)
+    );
+  }
+
   const result = await customerModelInstance.update(
     customerId,
     customerReqData
   );
 
   if (!result) {
-    response(
-      ctx,
-      httpResponse.conflict,
-      __(httpResponse.conflict.message.updateFailed, "customer")
-    );
+    return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
   }
 
   return response(ctx, httpResponse.success, httpResponse.success.message);

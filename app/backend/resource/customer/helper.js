@@ -4,7 +4,7 @@ const moment = require("moment");
 const _ = require("lodash");
 const Joi = require("joi");
 
-let customerSchema = {
+const customerSchema = {
   id: Joi.number().greater(0).label("Customer ID"),
   first_name: Joi.string().max(50).required(),
   last_name: Joi.string().max(50).required(),
@@ -33,10 +33,11 @@ let customerSchema = {
  * @returns {Object}
  */
 function validateCustomer(customer, isValidatePassedKeyOnly = false) {
+  let customerObjectSchema = customerSchema;
   if (isValidatePassedKeyOnly) {
-    customerSchema = _.pick(customerSchema, Object.keys(customer));
+    customerObjectSchema = _.pick(customerObjectSchema, Object.keys(customer));
   }
-  const schema = Joi.object(customerSchema);
+  const schema = Joi.object(customerObjectSchema);
   return schema.validate(customer, { abortEarly: false });
 }
 
