@@ -1,20 +1,21 @@
 const moment = require("moment");
 const QuoteItemModel = require("../../../../resource/quote/item/model");
 const QuoteModel = require("../../../../resource/quote/model");
+const CustomerModel = require("../../../../resource/customer/model");
 const request = require("supertest");
 
 const quoteModelInstance = new QuoteModel();
 const quoteItemModelInstance = new QuoteItemModel();
+const customerModelInstance = new CustomerModel();
 
 describe("/api/quote", () => {
   let server;
   let quoteData;
+  let customerData;
+  let customerId;
 
-  beforeEach(() => {
-    server = require("../../../../app");
-    quoteData = {
-      customer_id: "1",
-      is_active: true,
+  beforeAll(async () => {
+    customerData = {
       first_name: "john",
       last_name: "doe",
       date_of_birth: "1967-09-24",
@@ -22,6 +23,23 @@ describe("/api/quote", () => {
       address: "cebu city",
       zip_code: "6000",
       email: "johndoe@gmail.com",
+    };
+    [customerId] = await customerModelInstance.save({
+      ...customerData,
+      password: "aaaaa1",
+    });
+  });
+
+  afterAll(async () => {
+    await customerModelInstance.create().delete();
+  });
+
+  beforeEach(() => {
+    server = require("../../../../app");
+    quoteData = {
+      customer_id: customerId,
+      is_active: true,
+      ...customerData,
       subtotal: "1500",
       grandtotal: "1500",
       items: [
