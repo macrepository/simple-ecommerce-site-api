@@ -1,6 +1,6 @@
 const CustomerModel = require("./model");
 const { httpResponse } = require("../../constant/data");
-const { validateCustomer } = require("./helper");
+const { validateCustomer, validateCustomerId } = require("./helper");
 const { response } = require("../../utilities/http-response");
 const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
 const { hashPassword, comparePassword } = require("../../utilities/password");
@@ -39,7 +39,12 @@ async function saveCustomer(ctx) {
     );
   }
 
-  return response(ctx, httpResponse.success, httpResponse.success.message);
+  return response(
+    ctx,
+    httpResponse.success,
+    httpResponse.success.message,
+    result
+  );
 }
 
 /**
@@ -51,17 +56,32 @@ async function getCustomer(ctx) {
   let customer;
   const customerId = ctx.params.id;
 
+  const { error } = validateCustomerId(customerId);
+
+  if (error) {
+    return response(
+      ctx,
+      httpResponse.badRequest,
+      httpResponse.badRequest.message.invalidRequest,
+      joiErrorFormatter(error.details)
+    );
+  }
+
   if (customerId) {
-    customer = await customerModelInstance.findById(customerId);
+    customer = (await customerModelInstance.findById(customerId)).getData();
   } else {
-    customer = await customerModelInstance.findAll();
+    customer = (await customerModelInstance.findAll()).getData();
+  }
+
+  if (!customer) {
+    return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
   }
 
   return response(
     ctx,
     httpResponse.success,
     httpResponse.success.message,
-    customer?.data
+    customer
   );
 }
 

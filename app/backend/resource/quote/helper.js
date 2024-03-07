@@ -14,7 +14,6 @@ const quoteSchema = {
       return helpers.message("{{#label}} must be in YYYY-MM-DD format.");
     }
 
-    const formattedDate = moment().format("YYYY-MM-DD");
     if (moment(value).isAfter(moment().startOf("day"))) {
       return helpers.message("{{#label}} must be not in future.");
     }
@@ -31,12 +30,22 @@ const quoteSchema = {
   paytment: Joi.object(quotePaymentSchema),
 };
 
+/**
+ * Validate quote data
+ * @param {Object} quoteData
+ * @returns {Object}
+ */
 function validateQuote(quoteData) {
   const schema = Joi.object(quoteSchema);
 
   return schema.validate(quoteData, { abortEarly: false });
 }
 
+/**
+ * Validate quote ID
+ * @param {Number} quoteId
+ * @returns {Object}
+ */
 function ValidateQuoteId(quoteId) {
   const schema = quoteSchema.id;
 
@@ -45,5 +54,5 @@ function ValidateQuoteId(quoteId) {
 
 module.exports = {
   validateQuote,
-  ValidateQuoteId
+  ValidateQuoteId,
 };
