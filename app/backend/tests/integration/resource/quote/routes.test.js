@@ -190,7 +190,7 @@ describe("/api/quote", () => {
       const originalFn = QuoteModel.prototype.save;
       QuoteModel.prototype.save = jest
         .fn()
-        .mockRejectedValue(new Error("something happen"));
+        .mockRejectedValue(new Error("something happen in quote save process"));
       const res = await exec(quoteData);
 
       QuoteModel.prototype.save = originalFn;
@@ -248,7 +248,9 @@ describe("/api/quote", () => {
       const originalFn = QuoteModel.prototype.findById;
       QuoteModel.prototype.findById = jest
         .fn()
-        .mockRejectedValue(new Error("something happen"));
+        .mockRejectedValue(
+          new Error("something happen in getting quote data process")
+        );
 
       const res = await exec();
 
@@ -471,7 +473,9 @@ describe("/api/quote", () => {
       const originalDeleteMethod = QuoteModel.prototype.delete;
       QuoteModel.prototype.delete = jest
         .fn()
-        .mockRejectedValue(new Error("something happen"));
+        .mockRejectedValue(
+          new Error("something happen in quote deletion process")
+        );
 
       const res = await exec();
 

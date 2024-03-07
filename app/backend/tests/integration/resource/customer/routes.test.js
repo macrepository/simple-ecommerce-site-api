@@ -140,7 +140,9 @@ describe("api/customer", () => {
       const originalFn = CustomerModel.prototype.save;
       CustomerModel.prototype.save = jest
         .fn()
-        .mockRejectedValue(new Error("something happen"));
+        .mockRejectedValue(
+          new Error("something happen in customer save process")
+        );
       const res = await exec(customerData);
 
       CustomerModel.prototype.save = originalFn;
@@ -165,7 +167,7 @@ describe("api/customer", () => {
     });
   });
 
-  describe("GET /", () => {
+  describe("GET / OR /:id", () => {
     let customerId;
     const exec = () => {
       return request(server).get(`/api/customer/${customerId}`);
@@ -228,6 +230,128 @@ describe("api/customer", () => {
         message: expect.any(String),
         body: expect.any(Array),
       });
+    });
+  });
+
+  describe("PATCH /:id", () => {
+    let customerId;
+    const exec = () => {
+      return request(server)
+        .patch(`/api/customer/${customerId}`)
+        .send(customerData);
+    };
+
+    it("Should return 400 status if customer ID is invalid", async () => {
+      customerId = "a";
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
+    it("Should return 400 status if customer data is invalid", async () => {
+      customerId = 1;
+      customerData = { ...customerData, email: "" };
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.arrayContaining([
+          expect.objectContaining({
+            field: "email",
+            message: expect.any(String),
+          }),
+        ]),
+      });
+    });
+
+    it("Should return 404 status if customer ID is not found in the database", async () => {
+      customerId = 1;
+      customerData = _.omit(customerData, ["repeat_password"]);
+
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body).toMatchObject({
+        code: "not_found",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("Should return 409 status if customer email is already exist", async () => {
+      customerId = await customerModelInstance.save(
+        _.omit(customerData, ["repeat_password"])
+      );
+
+      customerData.email = "a@gmail.com";
+      await customerModelInstance.save(
+        _.omit(customerData, ["repeat_password"])
+      );
+
+      customerData = _.omit(customerData, ["repeat_password"]);
+
+      const res = await exec();
+
+      expect(res.status).toBe(409);
+      expect(res.body).toMatchObject({
+        code: "conflict",
+        message: expect.any(String),
+        body: expect.arrayContaining([
+          expect.objectContaining({
+            field: "email",
+            message: expect.any(String),
+          }),
+        ]),
+      });
+    });
+
+    it("Should return 500 status if something goes wrong in the update process", async () => {
+      customerId = 1;
+      customerData = _.omit(customerData, ["repeat_password"]);
+
+      const originalFn = CustomerModel.prototype.update;
+      CustomerModel.prototype.update = jest
+        .fn()
+        .mockRejectedValue(
+          new Error("something happen in customer update process")
+        );
+
+      const res = await exec();
+
+      CustomerModel.prototype.update = originalFn;
+
+      expect(res.status).toBe(500);
+      expect(res.body).toMatchObject({
+        code: "internal_server_error",
+        message: expect.any(String),
+        body: expect.any(String),
+      });
+    });
+
+    it("Should return 200 status if customer data was successfully updated", async () => {
+      customerId = await customerModelInstance.save(
+        _.omit(customerData, ["repeat_password"])
+      );
+
+      customerData = _.omit(customerData, ["repeat_password"]);
+
+      const res = await exec();
+
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        code: "success",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
     });
   });
 });
