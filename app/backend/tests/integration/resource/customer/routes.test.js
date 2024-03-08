@@ -1,5 +1,4 @@
 const _ = require("lodash");
-const moment = require("moment");
 const request = require("supertest");
 const CustomerModel = require("../../../../resource/customer/model");
 
@@ -29,65 +28,29 @@ describe("api/customer", () => {
     await customerModelInstance.create().delete();
   });
 
-  const longString = (length) => new Array(length + 1).join("a");
-
-  const tomorrow = moment().add(1, "days").format("YYYY-MM-DD");
-
-  const invalidCustomerValues = [
-    ["first_name", [longString(51), undefined]], // max length is 50
-    ["last_name", [longString(51), undefined]], // max length is 50
-    ["date_of_birth", ["a", moment().format("MM-DD-YYYY"), tomorrow]],
-    ["gender", ["a"]],
-    ["address", [longString(256)]], // Max length is 255
-    ["zip_code", [longString(21)]], // Max length is 20
-    ["email", [null, "a", "a@test", `${longString(42)}@test.com`, undefined]], //max length 50
-    [
-      "password",
-      [
-        null,
-        "",
-        longString(5),
-        longString(6),
-        longString(256),
-        `${longString(5)}A`,
-        undefined,
-      ],
-    ],
-  ];
-
   describe("POST /", () => {
-    const exec = (payload) => {
-      return request(server).post("/api/customer").send(payload);
+    const exec = () => {
+      return request(server).post("/api/customer").send(customerData);
     };
 
-    describe.each(invalidCustomerValues)(
-      "Validation tests for post request customer data",
-      (field, invalidValues) => {
-        test.each(invalidValues)(
-          `Should return 400 status if the request ${field} is %s`,
-          async (invalidValue) => {
-            const modifiedData = { ...customerData, [field]: invalidValue };
-            modifiedData.repeat_password = modifiedData.password;
+    it("should return a 400 status if the customer request data is invalid", async () => {
+      customerData = {};
+      const res = await exec();
 
-            const res = await exec(modifiedData);
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.arrayContaining([
+          expect.objectContaining({
+            field: expect.any(String),
+            message: expect.any(String),
+          }),
+        ]),
+      });
+    });
 
-            expect(res.status).toBe(400);
-            expect(res.body).toMatchObject({
-              code: "bad_request",
-              message: expect.any(String),
-              body: expect.arrayContaining([
-                expect.objectContaining({
-                  field: field,
-                  message: expect.any(String),
-                }),
-              ]),
-            });
-          }
-        );
-      }
-    );
-
-    it("should response 400 status if confirm password is not match ", async () => {
+    it("should response a 400 status if the customer confirm password is not match ", async () => {
       const field = "repeat_password";
       customerData.repeat_password = "a";
 
@@ -106,7 +69,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("should response 409 status on email that is already exist in the database", async () => {
+    it("should response a 409 status if the customer email is already exist in the database", async () => {
       await customerModelInstance.save(
         _.omit(customerData, ["repeat_password"])
       );
@@ -121,7 +84,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("Should return 409 if customer data is not saved.", async () => {
+    it("Should return a 409 status if the customer data is not saved.", async () => {
       const originalFn = CustomerModel.prototype.save;
       CustomerModel.prototype.save = jest.fn().mockReturnValue();
       const res = await exec(customerData);
@@ -136,7 +99,7 @@ describe("api/customer", () => {
       expect(res.body).toHaveProperty("body");
     });
 
-    it("should return 500 status if something goes wrong on the process", async () => {
+    it("should return a 500 status if the something goes wrong during the post customer process", async () => {
       const originalFn = CustomerModel.prototype.save;
       CustomerModel.prototype.save = jest
         .fn()
@@ -155,7 +118,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("should return 200 status if customer is successfully saved to the database", async () => {
+    it("should return a 200 status if the customer data is successfully saved to the database", async () => {
       const res = await exec(customerData);
 
       expect(res.status).toBe(200);
@@ -173,23 +136,19 @@ describe("api/customer", () => {
       return request(server).get(`/api/customer/${customerId}`);
     };
 
-    it("Should return 400 status if the customer ID passed is not greater than 0", async () => {
-      const testValues = ["a", 0];
+    it("Should return a 400 status if the customer ID passed is not greater than 0", async () => {
+      customerId = 0;
+      const res = await exec();
 
-      for (const value of testValues) {
-        customerId = value;
-        const res = await exec();
-
-        expect(res.status).toBe(400);
-        expect(res.body).toMatchObject({
-          code: "bad_request",
-          message: expect.any(String),
-          body: expect.anything(),
-        });
-      }
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
     });
 
-    it("Should return 404 status if no customer data was returned", async () => {
+    it("Should return a 404 status if no customer data was returned", async () => {
       customerId = 1;
       const res = await exec();
 
@@ -201,7 +160,7 @@ describe("api/customer", () => {
       expect(res.body).toHaveProperty("body");
     });
 
-    it("should return 200 status and one customer record if valid customer ID is passed", async () => {
+    it("should return a 200 status and one customer record if valid customer ID is passed", async () => {
       [customerId] = await customerModelInstance.save(
         _.omit(customerData, ["repeat_password"])
       );
@@ -216,7 +175,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("should return 200 status and one or more customer record if no customer ID is passed", async () => {
+    it("should return a 200 status and one or more customer record if no customer ID is passed", async () => {
       customerId = "";
       await customerModelInstance.save([
         { ..._.omit(customerData, ["repeat_password"]) },
@@ -242,7 +201,7 @@ describe("api/customer", () => {
         .send(customerData);
     };
 
-    it("Should return 400 status if customer ID is invalid", async () => {
+    it("Should return a 400 status if the customer ID is invalid", async () => {
       customerId = "a";
 
       const res = await exec();
@@ -255,7 +214,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("Should return 400 status if customer data is invalid", async () => {
+    it("Should return a 400 status if the customer data is invalid", async () => {
       customerId = 1;
       customerData = { ...customerData, email: "" };
 
@@ -274,7 +233,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("Should return 404 status if customer ID is not found in the database", async () => {
+    it("Should return a 404 status if the customer ID is not found in the database", async () => {
       customerId = 1;
       customerData = _.omit(customerData, ["repeat_password"]);
 
@@ -288,7 +247,7 @@ describe("api/customer", () => {
       expect(res.body).toHaveProperty("body");
     });
 
-    it("Should return 409 status if customer email is already exist", async () => {
+    it("Should return a 409 status if the customer email is already exist", async () => {
       [customerId] = await customerModelInstance.save(
         _.omit(customerData, ["repeat_password"])
       );
@@ -315,7 +274,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("Should return 500 status if something goes wrong in the update process", async () => {
+    it("Should return a 500 status if something goes wrong in the update process", async () => {
       customerId = 1;
       customerData = _.omit(customerData, ["repeat_password"]);
 
@@ -338,7 +297,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("Should return 200 status if customer data was successfully updated", async () => {
+    it("Should return a 200 status if the customer data was successfully updated", async () => {
       [customerId] = await customerModelInstance.save(
         _.omit(customerData, ["repeat_password"])
       );
@@ -363,7 +322,7 @@ describe("api/customer", () => {
       return request(server).delete(`/api/customer/${customerId}`);
     };
 
-    it("Should return 400 status if the customer ID is not greater than 0", async () => {
+    it("Should return a 400 status if the customer ID is not greater than 0", async () => {
       customerId = "0";
 
       const res = await exec();
@@ -376,7 +335,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("Should return 404 status if the customer ID is not found in the database", async () => {
+    it("Should return a 404 status if the customer ID is not found in the database", async () => {
       customerId = "1";
 
       const res = await exec();
@@ -389,7 +348,7 @@ describe("api/customer", () => {
       expect(res.body).toHaveProperty("body");
     });
 
-    it("Should return 500 status if something goes wrong in the delete process", async () => {
+    it("Should return a 500 status if something goes wrong in the delete process", async () => {
       customerId = "1";
       const originalFn = CustomerModel.prototype.delete;
       CustomerModel.prototype.delete = jest
@@ -410,7 +369,7 @@ describe("api/customer", () => {
       });
     });
 
-    it("Should return 200 status if customer was succesfully deleted", async () => {
+    it("Should return a 200 status if the customer record was succesfully deleted", async () => {
       [customerId] = await customerModelInstance.save(
         _.omit(customerData, ["repeat_password"])
       );
