@@ -2,7 +2,7 @@ const { __ } = require("../../utilities/string-formatter");
 const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
 const { httpResponse } = require("../../constant/data");
 const { response } = require("../../utilities/http-response");
-const { validateQuote, ValidateQuoteId } = require("./helper");
+const { validateQuote } = require("./helper");
 const QuoteModel = require("./model");
 const quoteModelInstance = new QuoteModel();
 
@@ -39,7 +39,7 @@ async function saveQuote(ctx) {
 
 async function getQuote(ctx) {
   const quoteId = ctx.params.id;
-  const { error } = ValidateQuoteId(quoteId);
+  const { error } = validateQuote({ id: quoteId }, true);
 
   if (error) {
     return response(
@@ -72,7 +72,7 @@ async function getQuote(ctx) {
 
 async function updateQuote(ctx) {
   const quoteId = ctx.params.id;
-  const { error } = ValidateQuoteId(quoteId);
+  const { error } = validateQuote({ id: quoteId }, true);
 
   if (error) {
     return response(
@@ -105,7 +105,7 @@ async function updateQuote(ctx) {
 
 async function deleteQuote(ctx) {
   const quoteId = ctx.params.id;
-  const { error } = ValidateQuoteId(quoteId);
+  const { error } = validateQuote({ id: quoteId }, true);
 
   if (error) {
     return response(

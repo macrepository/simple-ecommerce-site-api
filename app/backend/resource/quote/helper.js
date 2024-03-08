@@ -2,6 +2,7 @@ const { quoteItemSchema } = require("./item/helper");
 const { quotePaymentSchema } = require("./payment/helper");
 const moment = require("moment");
 const Joi = require("joi");
+const _ = require("lodash");
 
 const quoteSchema = {
   id: Joi.number().greater(0).label("Quote ID"),
@@ -35,24 +36,15 @@ const quoteSchema = {
  * @param {Object} quoteData
  * @returns {Object}
  */
-function validateQuote(quoteData) {
-  const schema = Joi.object(quoteSchema);
-
+function validateQuote(quoteData, isValidatePassedKeyOnly = false) {
+  let quoteObjectSchema = quoteSchema;
+  if (isValidatePassedKeyOnly) {
+    quoteObjectSchema = _.pick(quoteObjectSchema, Object.keys(quoteData));
+  }
+  const schema = Joi.object(quoteObjectSchema);
   return schema.validate(quoteData, { abortEarly: false });
-}
-
-/**
- * Validate quote ID
- * @param {Number} quoteId
- * @returns {Object}
- */
-function ValidateQuoteId(quoteId) {
-  const schema = quoteSchema.id;
-
-  return schema.validate(quoteId);
 }
 
 module.exports = {
   validateQuote,
-  ValidateQuoteId,
 };
