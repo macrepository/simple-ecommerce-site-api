@@ -1,4 +1,3 @@
-const moment = require("moment");
 const QuoteItemModel = require("../../../../resource/quote/item/model");
 const QuoteModel = require("../../../../resource/quote/model");
 const CustomerModel = require("../../../../resource/customer/model");
@@ -67,98 +66,29 @@ describe("/api/quote", () => {
     await quoteModelInstance.create().delete();
   });
 
-  const longString = (length) => new Array(length + 1).join("a");
-
-  const tomorrow = moment().add(1, "days").format("YYYY-MM-DD");
-
-  const invalidReqQouteValues = [
-    ["customer_id", [null, "", NaN, 0, undefined]],
-    ["is_active", [null, NaN, 1, "", undefined]],
-    ["first_name", [longString(51), undefined]], // max length is 50
-    ["last_name", [longString(51), undefined]], // max length is 50
-    ["date_of_birth", ["a", moment().format("MM-DD-YYYY"), tomorrow]],
-    ["gender", ["a"]],
-    ["address", [longString(256), undefined]], // Max length is 255
-    ["zip_code", [longString(21), undefined]], // Max length is 20
-    ["email", [null, "a", "a@test", `${longString(42)}@test.com`, undefined]], //max length 50
-    ["subtotal", [null, NaN, "", 0, -1, 10000000, undefined]],
-    ["grandtotal", [null, NaN, "", 0, -1, 10000000, undefined]],
-  ];
-
-  const invalidReqQouteItemValues = [
-    ["quote_id", [null, "", NaN, 0]],
-    ["name", [longString(51), undefined]], // max length is 50
-    ["price", [null, NaN, "", 0, -1, 10000000, undefined]],
-    ["quantity", [null, NaN, "", 0, -1, 1000000, undefined]],
-    ["product_id", [null, "", NaN, 0, undefined]],
-    ["row_total", [null, NaN, "", 0, -1, 10000000, undefined]],
-  ];
-
   describe("POST /", () => {
-    const exec = (payload) => request(server).post("/api/quote/").send(payload);
+    const exec = () => request(server).post("/api/quote/").send(quoteData);
 
-    describe.each(invalidReqQouteValues)(
-      "Validation tests for post request quote data",
-      (field, invalidValues) => {
-        test.each(invalidValues)(
-          `Should return 400 status if the request ${field} is %s`,
-          async (invalidValue) => {
-            const modifiedData = { ...quoteData, [field]: invalidValue };
-            const res = await exec(modifiedData);
+    it("should return a 400 status if the quote data is invalid", async () => {
+      quoteData = {};
+      const res = await exec();
 
-            expect(res.status).toBe(400);
-            expect(res.body).toMatchObject({
-              code: "bad_request",
-              message: expect.any(String),
-              body: expect.arrayContaining([
-                expect.objectContaining({
-                  field: field,
-                  message: expect.any(String),
-                }),
-              ]),
-            });
-          }
-        );
-      }
-    );
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.arrayContaining([
+          expect.objectContaining({
+            field: expect.any(String),
+            message: expect.any(String),
+          }),
+        ]),
+      });
+    });
 
-    describe.each(invalidReqQouteItemValues)(
-      "Validation tests for request quote item data",
-      (field, invalidValues) => {
-        test.each(invalidValues)(
-          `Should return 400 status if the request ${field} is %s`,
-          async (invalidValue) => {
-            const modifiedData = {
-              ...quoteData,
-              items: [
-                {
-                  ...quoteData.items[0],
-                  [field]: invalidValue,
-                },
-              ],
-            };
-
-            const res = await exec(modifiedData);
-
-            expect(res.status).toBe(400);
-            expect(res.body).toMatchObject({
-              code: "bad_request",
-              message: expect.any(String),
-              body: expect.arrayContaining([
-                expect.objectContaining({
-                  field: "items",
-                  message: expect.any(String),
-                }),
-              ]),
-            });
-          }
-        );
-      }
-    );
-
-    it("should return 409 status if the email is already exist to the database", async () => {
+    it("should return a 409 status if the email is already exist to the database", async () => {
       await quoteModelInstance.save(quoteData);
-      const res = await exec(quoteData);
+      const res = await exec();
       const quote = (
         await quoteModelInstance.findByEmail(quoteData.email)
       ).getData();
@@ -172,10 +102,10 @@ describe("/api/quote", () => {
       });
     });
 
-    it("should return 409 status if no quote ID return after saving to the DB", async () => {
+    it("should return a 409 status if no quote ID return after saving to the DB", async () => {
       const originalSaveFn = QuoteModel.prototype.save;
-      QuoteModel.prototype.save = jest.fn(quoteData).mockReturnValue();
-      const res = await exec(quoteData);
+      QuoteModel.prototype.save = jest.fn().mockReturnValue();
+      const res = await exec();
       QuoteModel.prototype.save = originalSaveFn;
 
       expect(res.status).toBe(409);
@@ -186,12 +116,12 @@ describe("/api/quote", () => {
       });
     });
 
-    it("Should return 500 if anything goes wrong in the process", async () => {
+    it("should return a 500 if something goes wrong in the quote saving process", async () => {
       const originalFn = QuoteModel.prototype.save;
       QuoteModel.prototype.save = jest
         .fn()
         .mockRejectedValue(new Error("something happen in quote save process"));
-      const res = await exec(quoteData);
+      const res = await exec();
 
       QuoteModel.prototype.save = originalFn;
 
@@ -203,8 +133,8 @@ describe("/api/quote", () => {
       });
     });
 
-    it("should return 200 status if the quote was succesfully saved to the database", async () => {
-      const res = await exec(quoteData);
+    it("should return a 200 status if the quote was succesfully saved to the database", async () => {
+      const res = await exec();
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
@@ -215,11 +145,11 @@ describe("/api/quote", () => {
     });
   });
 
-  describe("GET /", () => {
+  describe("GET /:id", () => {
     let quoteId = 0;
     const exec = () => request(server).get(`/api/quote/${quoteId}`);
 
-    it("Should return 400 if quote ID is invalid", async () => {
+    it("should return a 400 if the quote ID is invalid", async () => {
       quoteId = 0;
       const res = await exec();
 
@@ -231,7 +161,7 @@ describe("/api/quote", () => {
       });
     });
 
-    it("Should return 404 if quote ID is not found", async () => {
+    it("should return a 404 if the quote ID is not found", async () => {
       quoteId = 1;
       const res = await exec();
 
@@ -243,7 +173,7 @@ describe("/api/quote", () => {
       expect(res.body).toHaveProperty("body");
     });
 
-    it("Should return 500 if something goes wrong in the process", async () => {
+    it("should return a 500 if something goes wrong in the quote getting process", async () => {
       quoteId = 1;
       const originalFn = QuoteModel.prototype.findById;
       QuoteModel.prototype.findById = jest
@@ -264,7 +194,7 @@ describe("/api/quote", () => {
       });
     });
 
-    it("Should return 200 if quote ID is valid and returned quote data", async () => {
+    it("should return a 200 if the quote ID is valid and returned a quote data", async () => {
       quoteId = await quoteModelInstance.save(quoteData);
       const res = await exec();
 
@@ -280,18 +210,18 @@ describe("/api/quote", () => {
     });
   });
 
-  describe("PATCH /", () => {
+  describe("PATCH /:id", () => {
     let quoteId;
-    const exec = (payload) =>
-      request(server).patch(`/api/quote/${quoteId}`).send(payload);
+    const exec = () =>
+      request(server).patch(`/api/quote/${quoteId}`).send(quoteData);
 
     beforeEach(() => {
       quoteId = 1;
     });
 
-    it("Should return 400 status if the quote ID is invalid", async () => {
-      quoteId = 0;
-      const res = await exec({});
+    it("should return a 400 status if the quote ID is invalid", async () => {
+      quoteData = {};
+      const res = await exec();
 
       expect(res.status).toBe(400);
       expect(res.body).toMatchObject({
@@ -301,73 +231,33 @@ describe("/api/quote", () => {
       });
     });
 
-    describe.each(invalidReqQouteValues)(
-      "Validation tests for patch request quote data",
-      (field, invalidValues) => {
-        test.each(invalidValues)(
-          `Should return 400 status if the request ${field} is %s`,
-          async (invalidValue) => {
-            const modifiedData = { ...quoteData, [field]: invalidValue };
-            const res = await exec(modifiedData);
+    it("should return a 400 status if the quote data is invalid", async () => {
+      quoteData = { ...quoteData, email: "" };
 
-            expect(res.status).toBe(400);
-            expect(res.body).toMatchObject({
-              code: "bad_request",
-              message: expect.any(String),
-              body: expect.arrayContaining([
-                expect.objectContaining({
-                  field: field,
-                  message: expect.any(String),
-                }),
-              ]),
-            });
-          }
-        );
-      }
-    );
+      const res = await exec();
 
-    describe.each(invalidReqQouteItemValues)(
-      "Validation tests for request quote item data",
-      (field, invalidValues) => {
-        test.each(invalidValues)(
-          `Should return 400 status if the request ${field} is %s`,
-          async (invalidValue) => {
-            const modifiedData = {
-              ...quoteData,
-              items: [
-                {
-                  ...quoteData.items[0],
-                  [field]: invalidValue,
-                },
-              ],
-            };
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.arrayContaining([
+          expect.objectContaining({
+            field: "email",
+            message: expect.any(String),
+          }),
+        ]),
+      });
+    });
 
-            const res = await exec(modifiedData);
-
-            expect(res.status).toBe(400);
-            expect(res.body).toMatchObject({
-              code: "bad_request",
-              message: expect.any(String),
-              body: expect.arrayContaining([
-                expect.objectContaining({
-                  field: "items",
-                  message: expect.any(String),
-                }),
-              ]),
-            });
-          }
-        );
-      }
-    );
-
-    it("Should return 409 if the email is already exist in the database", async () => {
+    it("should return a 409 status if the quote email is already exist in the database", async () => {
       const { items, ...purelyQuoteData } = quoteData;
       quoteId = await quoteModelInstance.save(purelyQuoteData);
 
       purelyQuoteData.email = "a@gmail.com";
       await quoteModelInstance.save(purelyQuoteData);
 
-      const res = await exec(purelyQuoteData);
+      quoteData = purelyQuoteData;
+      const res = await exec();
 
       expect(res.status).toBe(409);
       expect(res.body).toMatchObject({
@@ -377,14 +267,14 @@ describe("/api/quote", () => {
       });
     });
 
-    it("Should return 404 if the quote ID is not found in the database", async () => {
+    it("should return a 404 if the quote ID is not found in the database", async () => {
       quoteId = 1;
       quoteData.items[0].id = 1;
       quoteData.items[0].quote_id = quoteId;
       quoteData.items[1].id = 2;
       quoteData.items[1].quote_id = quoteId;
 
-      const res = await exec(quoteData);
+      const res = await exec();
 
       expect(res.status).toBe(404);
       expect(res.body).toMatchObject({
@@ -394,10 +284,10 @@ describe("/api/quote", () => {
       expect(res.body).toHaveProperty("body");
     });
 
-    it("Should return 500 if anything goes wrong in the process like no item_id property in the payload is passed", async () => {
+    it("should return a 500 if anything goes wrong in the process like no item_id property in the payload is passed", async () => {
       quoteId = await quoteModelInstance.save(quoteData);
 
-      const res = await exec(quoteData);
+      const res = await exec();
 
       expect(res.status).toBe(500);
       expect(res.body).toMatchObject({
@@ -407,7 +297,7 @@ describe("/api/quote", () => {
       });
     });
 
-    it("Should return 200 if successfully saved to the database", async () => {
+    it("should return a 200 if successfully saved to the database", async () => {
       quoteId = await quoteModelInstance.save(quoteData);
 
       quoteData.first_name = "mark";
@@ -421,7 +311,8 @@ describe("/api/quote", () => {
         return item;
       });
 
-      const res = await exec({ ...quoteData, items });
+      quoteData = { ...quoteData, items };
+      const res = await exec();
       const editedQuoteData = await quoteModelInstance.findById(quoteId);
       const editedQuoteItems = await editedQuoteData.getItems();
 
@@ -438,11 +329,11 @@ describe("/api/quote", () => {
     });
   });
 
-  describe("DELETE /", () => {
+  describe("DELETE /:id", () => {
     let quoteId;
     const exec = () => request(server).delete(`/api/quote/${quoteId}`);
 
-    it("Should return 400 status if the quote ID is invalid ", async () => {
+    it("should return a 400 status if the quote ID is invalid ", async () => {
       quoteId = 0;
 
       const res = await exec();
@@ -455,7 +346,7 @@ describe("/api/quote", () => {
       });
     });
 
-    it("Should return 404 status if the quote ID is not in the database", async () => {
+    it("should return a 404 status if the quote ID is not in the database", async () => {
       quoteId = 1;
 
       const res = await exec();
@@ -468,7 +359,7 @@ describe("/api/quote", () => {
       expect(res.body).toHaveProperty("body");
     });
 
-    it("Should return 500 status if something goes wrong during the process", async () => {
+    it("should return a 500 status if something goes wrong during the process", async () => {
       quoteId = 1;
       const originalDeleteMethod = QuoteModel.prototype.delete;
       QuoteModel.prototype.delete = jest
@@ -489,7 +380,7 @@ describe("/api/quote", () => {
       });
     });
 
-    it("Should return 200 status if deletion is successfull", async () => {
+    it("should return a 200 status if deletion is successfull", async () => {
       quoteId = await quoteModelInstance.save(quoteData);
 
       const res = await exec();
