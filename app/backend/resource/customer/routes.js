@@ -1,3 +1,8 @@
+const { validateCustomer } = require("./helper");
+const {
+  validateReqId,
+  validateReqBody,
+} = require("../../middleware/joi-validate");
 const {
   saveCustomer,
   getCustomer,
@@ -7,18 +12,22 @@ const {
   customerAccount,
 } = require("./controller");
 const { customerAuth } = require("../../middleware/customer-auth");
-const { catchErrors } = require("../../middleware/async-exception-handler");
 const Router = require("@koa/router");
 const router = new Router({
   prefix: "/api/customer",
 });
 
 router.get("/account", customerAuth, customerAccount);
-router.post("/login", catchErrors(loginCustomer));
+router.post("/login", loginCustomer);
 
-router.post("/", catchErrors(saveCustomer));
-router.get("/", catchErrors(getCustomer));
-router.get("/:id", catchErrors(getCustomer));
-router.patch("/:id", catchErrors(patchCustomer));
-router.delete("/:id", catchErrors(deleteCustomer));
+router.post("/", validateReqBody(validateCustomer), saveCustomer);
+router.get("/", getCustomer);
+router.get("/:id", validateReqId(validateCustomer), getCustomer);
+router.patch(
+  "/:id",
+  validateReqId(validateCustomer),
+  validateReqBody(validateCustomer, true),
+  patchCustomer
+);
+router.delete("/:id", validateReqId(validateCustomer), deleteCustomer);
 module.exports = router;

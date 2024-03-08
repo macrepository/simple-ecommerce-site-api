@@ -1,8 +1,6 @@
 const CustomerModel = require("./model");
 const { httpResponse } = require("../../constant/data");
-const { validateCustomer } = require("./helper");
 const { response } = require("../../utilities/http-response");
-const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
 const { hashPassword, comparePassword } = require("../../utilities/password");
 const { generateToken } = require("../../utilities/json-web-token");
 const { __ } = require("../../utilities/string-formatter");
@@ -15,19 +13,8 @@ const customerModelInstance = new CustomerModel();
  */
 async function saveCustomer(ctx) {
   const customerReqData = ctx.request.body;
-
-  const { error } = validateCustomer(customerReqData);
-
-  if (error) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(error.details)
-    );
-  }
-
   delete customerReqData.repeat_password;
+
   customerReqData.password = await hashPassword(customerReqData.password);
   const result = await customerModelInstance.save(customerReqData);
 
@@ -56,17 +43,6 @@ async function getCustomer(ctx) {
   let customer;
   const customerId = ctx.params.id;
 
-  const { error } = validateCustomer({ id: customerId}, true);
-
-  if (error) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(error.details)
-    );
-  }
-
   if (customerId) {
     customer = (await customerModelInstance.findById(customerId)).getData();
   } else {
@@ -92,30 +68,7 @@ async function getCustomer(ctx) {
  */
 async function patchCustomer(ctx) {
   const customerId = ctx.params.id;
-
-  const { error } = validateCustomer({ id: customerId}, true);
-
-  if (error) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(error.details)
-    );
-  }
-
   const customerReqData = ctx.request.body;
-
-  const { error: errorReq } = validateCustomer(customerReqData, true);
-
-  if (errorReq) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(errorReq.details)
-    );
-  }
 
   const result = await customerModelInstance.update(
     customerId,
@@ -136,17 +89,6 @@ async function patchCustomer(ctx) {
  */
 async function deleteCustomer(ctx) {
   const customerId = ctx.params.id;
-
-  const { error } = validateCustomer({ id: customerId}, true);
-
-  if (error) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(error.details)
-    );
-  }
 
   const result = await customerModelInstance.delete(customerId);
 

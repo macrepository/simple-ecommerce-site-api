@@ -1,24 +1,11 @@
 const { __ } = require("../../utilities/string-formatter");
-const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
 const { httpResponse } = require("../../constant/data");
 const { response } = require("../../utilities/http-response");
-const { validateQuote } = require("./helper");
 const QuoteModel = require("./model");
 const quoteModelInstance = new QuoteModel();
 
 async function saveQuote(ctx) {
   const quoteReqData = ctx.request.body;
-  const { error } = validateQuote(quoteReqData);
-
-  if (error) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(error.details)
-    );
-  }
-
   const quoteId = await quoteModelInstance.save(quoteReqData);
 
   if (!quoteId) {
@@ -39,17 +26,6 @@ async function saveQuote(ctx) {
 
 async function getQuote(ctx) {
   const quoteId = ctx.params.id;
-  const { error } = validateQuote({ id: quoteId }, true);
-
-  if (error) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(error.details)
-    );
-  }
-
   const quote = await quoteModelInstance.findById(quoteId);
 
   if (!quote.data?.id) {
@@ -72,28 +48,7 @@ async function getQuote(ctx) {
 
 async function updateQuote(ctx) {
   const quoteId = ctx.params.id;
-  const { error } = validateQuote({ id: quoteId }, true);
-
-  if (error) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(error.details)
-    );
-  }
-
   const quoteReqData = ctx.request.body;
-  const { error: quoteError } = validateQuote(quoteReqData);
-
-  if (quoteError) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(quoteError.details)
-    );
-  }
 
   const result = await quoteModelInstance.update(quoteId, quoteReqData);
   if (!result) {
@@ -105,16 +60,6 @@ async function updateQuote(ctx) {
 
 async function deleteQuote(ctx) {
   const quoteId = ctx.params.id;
-  const { error } = validateQuote({ id: quoteId }, true);
-
-  if (error) {
-    return response(
-      ctx,
-      httpResponse.badRequest,
-      httpResponse.badRequest.message.invalidRequest,
-      joiErrorFormatter(error.details)
-    );
-  }
 
   const result = await quoteModelInstance.delete(quoteId);
 

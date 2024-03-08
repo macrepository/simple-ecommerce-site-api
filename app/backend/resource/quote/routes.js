@@ -1,19 +1,28 @@
+const { validateQuote } = require("./helper");
+const {
+  validateReqId,
+  validateReqBody,
+} = require("../../middleware/joi-validate");
 const {
   saveQuote,
   getQuote,
   updateQuote,
-  deleteQuote
+  deleteQuote,
 } = require("./controller");
-const { catchErrors } = require("../../middleware/async-exception-handler");
 const Router = require("@koa/router");
 const router = new Router({
   prefix: "/api/quote",
 });
 
-router.post("/", catchErrors(saveQuote));
-router.get("/:id", catchErrors(getQuote));
-router.patch("/:id", catchErrors(updateQuote));
-router.delete("/:id", catchErrors(deleteQuote));
+router.post("/", validateReqBody(validateQuote), saveQuote);
+router.get("/:id", validateReqId(validateQuote), getQuote);
+router.patch(
+  "/:id",
+  validateReqId(validateQuote),
+  validateReqBody(validateQuote),
+  updateQuote
+);
+router.delete("/:id", validateReqId(validateQuote), deleteQuote);
 
 // router.post("/item/:quoteId", catchErrors(saveQuoteItem));
 // router.get("/item/:quoteId/:id", catchErrors(getQuoteItem));
