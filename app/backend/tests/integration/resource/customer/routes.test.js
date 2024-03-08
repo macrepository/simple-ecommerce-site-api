@@ -4,7 +4,7 @@ const CustomerModel = require("../../../../resource/customer/model");
 
 const customerModelInstance = new CustomerModel();
 
-describe("api/customer", () => {
+describe("/api/customer", () => {
   let server;
   let customerData;
 
