@@ -137,22 +137,21 @@ async function patchCustomer(ctx) {
 async function deleteCustomer(ctx) {
   const customerId = ctx.params.id;
 
-  if (!customerId) {
+  const { error } = validateCustomerId(customerId);
+
+  if (error) {
     return response(
       ctx,
       httpResponse.badRequest,
-      __(httpResponse.badRequest.message.notSetKey, "customer ID")
+      httpResponse.badRequest.message.invalidRequest,
+      joiErrorFormatter(error.details)
     );
   }
 
   const result = await customerModelInstance.delete(customerId);
 
   if (!result) {
-    return response(
-      ctx,
-      httpResponse.conflict,
-      __(httpResponse.conflict.message.deleteFailed, "customer")
-    );
+    return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
   }
 
   return response(ctx, httpResponse.success, httpResponse.success.message);

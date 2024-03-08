@@ -202,9 +202,10 @@ describe("api/customer", () => {
     });
 
     it("should return 200 status and one customer record if valid customer ID is passed", async () => {
-      customerId = await customerModelInstance.save(
+      [customerId] = await customerModelInstance.save(
         _.omit(customerData, ["repeat_password"])
       );
+
       const res = await exec();
 
       expect(res.status).toBe(200);
@@ -288,7 +289,7 @@ describe("api/customer", () => {
     });
 
     it("Should return 409 status if customer email is already exist", async () => {
-      customerId = await customerModelInstance.save(
+      [customerId] = await customerModelInstance.save(
         _.omit(customerData, ["repeat_password"])
       );
 
@@ -338,7 +339,7 @@ describe("api/customer", () => {
     });
 
     it("Should return 200 status if customer data was successfully updated", async () => {
-      customerId = await customerModelInstance.save(
+      [customerId] = await customerModelInstance.save(
         _.omit(customerData, ["repeat_password"])
       );
 
@@ -346,6 +347,82 @@ describe("api/customer", () => {
 
       const res = await exec();
 
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        code: "success",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+  });
+
+  describe("DELETE /:id", () => {
+    let customerId;
+
+    const exec = () => {
+      return request(server).delete(`/api/customer/${customerId}`);
+    };
+
+    it("Should return 400 status if the customer ID is not greater than 0", async () => {
+      customerId = "0";
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
+    it("Should return 404 status if the customer ID is not found in the database", async () => {
+      customerId = "1";
+
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body).toMatchObject({
+        code: "not_found",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("Should return 500 status if something goes wrong in the delete process", async () => {
+      customerId = "1";
+      const originalFn = CustomerModel.prototype.delete;
+      CustomerModel.prototype.delete = jest
+        .fn()
+        .mockRejectedValue(
+          new Error("something happen during customer deletion process")
+        );
+
+      const res = await exec();
+
+      CustomerModel.prototype.delete = originalFn;
+
+      expect(res.status).toBe(500);
+      expect(res.body).toMatchObject({
+        code: "internal_server_error",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
+    it("Should return 200 status if customer was succesfully deleted", async () => {
+      [customerId] = await customerModelInstance.save(
+        _.omit(customerData, ["repeat_password"])
+      );
+
+      const res = await exec();
+
+      const customer = (
+        await customerModelInstance.findById(customerId)
+      ).getData();
+
+      expect(customerId).toBeGreaterThan(0);
+      expect(customer).toBeNull();
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
         code: "success",
