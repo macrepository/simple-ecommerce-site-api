@@ -41,29 +41,6 @@ function validateCustomer(customer, isValidatePassedKeyOnly = false) {
   return schema.validate(customer, { abortEarly: false });
 }
 
-/**
- * Validate customer Email
- * @param {string} email
- * @returns {Object}
- */
-function validateCustomerEmail(email) {
-  const schema = Joi.object({ email: customerSchema.email });
-  return schema.validate(email);
-}
-
-/**
- * Validate customer ID
- * @param {Number} id
- * @returns {Object}
- */
-function validateCustomerId(id) {
-  const schema = customerSchema.id;
-
-  return schema.validate(id);
-}
-
 module.exports = {
   validateCustomer,
-  validateCustomerEmail,
-  validateCustomerId,
 };

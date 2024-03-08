@@ -1,6 +1,6 @@
 const CustomerModel = require("./model");
 const { httpResponse } = require("../../constant/data");
-const { validateCustomer, validateCustomerId } = require("./helper");
+const { validateCustomer } = require("./helper");
 const { response } = require("../../utilities/http-response");
 const { joiErrorFormatter } = require("../../utilities/joi-error-formatter");
 const { hashPassword, comparePassword } = require("../../utilities/password");
@@ -56,7 +56,7 @@ async function getCustomer(ctx) {
   let customer;
   const customerId = ctx.params.id;
 
-  const { error } = validateCustomerId(customerId);
+  const { error } = validateCustomer({ id: customerId}, true);
 
   if (error) {
     return response(
@@ -93,7 +93,7 @@ async function getCustomer(ctx) {
 async function patchCustomer(ctx) {
   const customerId = ctx.params.id;
 
-  const { error } = validateCustomerId(customerId);
+  const { error } = validateCustomer({ id: customerId}, true);
 
   if (error) {
     return response(
@@ -137,7 +137,7 @@ async function patchCustomer(ctx) {
 async function deleteCustomer(ctx) {
   const customerId = ctx.params.id;
 
-  const { error } = validateCustomerId(customerId);
+  const { error } = validateCustomer({ id: customerId}, true);
 
   if (error) {
     return response(
