@@ -105,7 +105,7 @@ describe("resource/customer/helper", () => {
 
     it("should return null if customer data is valid and isValidatePassedKeyOnly is set to true", () => {
       customerData = _.pick(customerData, ["first_name", "email"]);
-      const { error } = validateCustomer();
+      const { error } = validateCustomer(customerData, true);
 
       expect(error).toBeUndefined();
     });
