@@ -1,3 +1,4 @@
+const { hashPassword } = require("../../utilities/password");
 const AbstractClass = require("../../utilities/abstract-class");
 const knex = require("../../database/db");
 const tableCustomer = "customer";
@@ -17,10 +18,21 @@ class CustomerModel extends AbstractClass {
 
   /**
    * The `save` function asynchronously inserts a customer record after creating a new record.
-   * @param {Object} customer
+   * @param {Object|Array<Object>} customer
    * @returns {Promise<number[]>}
    */
   async save(customer) {
+    if (Array.isArray(customer)) {
+      customer = await Promise.all(
+        customer.map(async (cust) => {
+          cust.password = await hashPassword(cust.password);
+          return cust;
+        })
+      );
+    } else {
+      customer.password = await hashPassword(customer.password);
+    }
+
     return await this.create().insert(customer);
   }
 

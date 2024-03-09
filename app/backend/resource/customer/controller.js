@@ -1,7 +1,7 @@
 const CustomerModel = require("./model");
 const { httpResponse } = require("../../constant/data");
 const { response } = require("../../utilities/http-response");
-const { hashPassword, comparePassword } = require("../../utilities/password");
+const { comparePassword } = require("../../utilities/password");
 const { generateToken } = require("../../utilities/json-web-token");
 const { __ } = require("../../utilities/string-formatter");
 
@@ -15,7 +15,6 @@ async function saveCustomer(ctx) {
   const customerReqData = ctx.request.body;
   delete customerReqData.repeat_password;
 
-  customerReqData.password = await hashPassword(customerReqData.password);
   const result = await customerModelInstance.save(customerReqData);
 
   if (!result) {
@@ -99,6 +98,11 @@ async function deleteCustomer(ctx) {
   return response(ctx, httpResponse.success, httpResponse.success.message);
 }
 
+/**
+ * Customer Login Account
+ * @param {*} ctx
+ * @returns
+ */
 async function loginCustomer(ctx) {
   const { email, password } = ctx.request.body;
 
