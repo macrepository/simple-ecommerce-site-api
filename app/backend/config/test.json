@@ -5,7 +5,7 @@
         "dbPassword": "pwdnac255",
         "dbNameTest": "simple-ecommerce-site-test"
     },
-    "port": "",
-    "nodeEnv": "",
-    "jwtPrivateKey": ""
+    "port": "3001",
+    "nodeEnv": "test",
+    "jwtPrivateKey": "simple-ecommerce-site**"
 }
