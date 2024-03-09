@@ -37,7 +37,26 @@ function validateReqId(validator) {
   };
 }
 
+function validateReqLogin(validator) {
+  return async (ctx, next) => {
+    const { email, password } = ctx.request.body;
+    const { error } = validator({ email, password }, true);
+
+    if (error) {
+      return response(
+        ctx,
+        httpResponse.badRequest,
+        httpResponse.badRequest.message.invalidRequest,
+        joiErrorFormatter(error.details)
+      );
+    }
+
+    await next();
+  };
+}
+
 module.exports = {
   validateReqBody,
   validateReqId,
+  validateReqLogin,
 };

@@ -2,6 +2,7 @@ const { validateCustomer } = require("./helper");
 const {
   validateReqId,
   validateReqBody,
+  validateReqLogin,
 } = require("../../middleware/joi-validate");
 const {
   saveCustomer,
@@ -18,7 +19,7 @@ const router = new Router({
 });
 
 router.get("/account", customerAuth, customerAccount);
-router.post("/login", loginCustomer);
+router.post("/login", validateReqLogin(validateCustomer), loginCustomer);
 
 router.post("/", validateReqBody(validateCustomer), saveCustomer);
 router.get("/", getCustomer);
@@ -30,4 +31,5 @@ router.patch(
   patchCustomer
 );
 router.delete("/:id", validateReqId(validateCustomer), deleteCustomer);
+
 module.exports = router;
