@@ -1,5 +1,6 @@
 const _ = require("lodash");
 const request = require("supertest");
+const { generateToken } = require("../../../../utilities/json-web-token");
 const CustomerModel = require("../../../../resource/customer/model");
 
 const customerModelInstance = new CustomerModel();
@@ -511,6 +512,55 @@ describe("/api/customer", () => {
         }),
       });
       expect(res.body.body).not.toHaveProperty("password");
+    });
+  });
+
+  describe("GET /account", () => {
+    let jwtToken;
+    const exec = () => {
+      return request(server)
+        .get("/api/customer/account")
+        .set("x-auth-token", jwtToken);
+    };
+
+    it("should return a 401 status if the JWT token is missing in the customer accouunt request", async () => {
+      jwtToken = "";
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+      expect(res.body).toMatchObject({
+        code: "unauthorized",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("should return a 401 status if the JWT token is invalid", async () => {
+      jwtToken = "aaaa";
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+      expect(res.body).toMatchObject({
+        code: "unauthorized",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("should retun a 200 status if the JWT token is valid", async () => {
+      const [customerId] = await customerModelInstance.save(
+        _.omit(customerData, ["repeat_password"])
+      );
+
+      const customer = (
+        await customerModelInstance.findById(customerId)
+      ).getData();
+      delete customer.password;
+      jwtToken = generateToken({ ...customer });
+
+      const res = await exec();
+
+      expect(res.status).toBe(200);
     });
   });
 });
