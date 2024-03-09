@@ -1,4 +1,4 @@
-const { validateCustomer } = require("../../../resource/customer/helper");
+const { validateCustomer } = require("../../../../resource/customer/helper");
 const moment = require("moment");
 const _ = require("lodash");
 

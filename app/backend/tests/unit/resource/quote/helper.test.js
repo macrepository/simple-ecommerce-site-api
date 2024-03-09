@@ -1,4 +1,4 @@
-const { validateQuote } = require("../../../resource/quote/helper");
+const { validateQuote } = require("../../../../resource/quote/helper");
 const moment = require("moment");
 const _ = require("lodash");
 
