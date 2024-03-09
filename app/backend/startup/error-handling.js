@@ -1,5 +1,3 @@
-const logger = require("../utilities/logger");
-
 // Error Handler - It will catch by winston and print logs
 
 module.exports = function (app) {
