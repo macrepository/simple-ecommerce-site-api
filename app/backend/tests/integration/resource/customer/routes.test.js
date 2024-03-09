@@ -390,4 +390,127 @@ describe("/api/customer", () => {
       expect(res.body).toHaveProperty("body");
     });
   });
+
+  describe("POST /login", () => {
+    let payload;
+    const exec = () => {
+      return request(server).post("/api/customer/login").send(payload);
+    };
+
+    beforeEach(() => {
+      payload = {
+        email: customerData.email,
+        password: customerData.password,
+      };
+    });
+
+    it("should return a 400 status if the customer email or password is invalid", async () => {
+      payload = {};
+
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.arrayContaining([
+          expect.objectContaining(
+            {
+              field: "email",
+              message: expect.any(String),
+            },
+            {
+              field: "password",
+              message: expect.any(String),
+            }
+          ),
+        ]),
+      });
+    });
+
+    it("should return a 401 status if the customer email is not exist", async () => {
+      const res = await exec();
+
+      expect(res.status).toBe(401);
+      expect(res.body).toMatchObject({
+        code: "unauthorized",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("should return a 401 status if the customer password doesn't match", async () => {
+      const [customerId] = await customerModelInstance.save(
+        _.omit(customerData, ["repeat_password"])
+      );
+
+      payload.password = "aaaaa1";
+
+      const res = await exec();
+
+      expect(customerId).toBeGreaterThan(0);
+      expect(res.status).toBe(401);
+      expect(res.body).toMatchObject({
+        code: "unauthorized",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("should return a 500 status if something goes wrong during the customer login process", async () => {
+      const originalFn = CustomerModel.prototype.findByEmail;
+      CustomerModel.prototype.findByEmail = jest
+        .fn()
+        .mockRejectedValue(
+          new Error(
+            "something happen during customer login findByEmail process"
+          )
+        );
+
+      const res = await exec();
+
+      CustomerModel.prototype.findByEmail = originalFn;
+
+      expect(res.status).toBe(500);
+      expect(res.body).toMatchObject({
+        code: "internal_server_error",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
+    it("should return a 200 status and set the header of the x-auth-token key if the login was successful", async () => {
+      const jwtPattern = /^[A-Za-z0-9-_]+\.[A-Za-z0-9-_]+\.[A-Za-z0-9-_]*$/;
+      const [customerId] = await customerModelInstance.save(
+        _.omit(customerData, ["repeat_password"])
+      );
+
+      const res = await exec();
+
+      expect(customerId).toBeGreaterThan(0);
+      expect(res.status).toBe(200);
+
+      expect(res.headers["x-auth-token"]).toMatch(jwtPattern);
+    });
+
+    it("should return a 200 status and customer details excluding password if the login was successful", async () => {
+      const [customerId] = await customerModelInstance.save(
+        _.omit(customerData, ["repeat_password"])
+      );
+
+      const res = await exec();
+
+      expect(customerId).toBeGreaterThan(0);
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        code: "success",
+        message: expect.any(String),
+        body: expect.objectContaining({
+          id: expect.anything(),
+          email: expect.anything(),
+        }),
+      });
+      expect(res.body.body).not.toHaveProperty("password");
+    });
+  });
 });
