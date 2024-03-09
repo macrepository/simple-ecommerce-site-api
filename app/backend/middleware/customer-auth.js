@@ -5,15 +5,7 @@ const { httpResponse } = require("../constant/data");
 module.exports.customerAuth = function (ctx, next) {
   const token = ctx.get("x-auth-token");
 
-  if (!token)
-    return response(
-      ctx,
-      httpResponse.unauthorized,
-      httpResponse.unauthorized.message.noToken
-    );
-
-  const customerObject = verifyToken(token);
-  if (!customerObject) {
+  if (!token) {
     return response(
       ctx,
       httpResponse.unauthorized,
@@ -21,6 +13,15 @@ module.exports.customerAuth = function (ctx, next) {
     );
   }
 
-  ctx.request.body = { customer: customerObject };
+  const decoded = verifyToken(token);
+  if (!decoded) {
+    return response(
+      ctx,
+      httpResponse.unauthorized,
+      httpResponse.unauthorized.message.noToken
+    );
+  }
+
+  ctx.request.body = { customer: decoded };
   next();
 };
