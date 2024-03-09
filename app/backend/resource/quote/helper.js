@@ -41,7 +41,9 @@ function validateQuote(quoteData, isValidatePassedKeyOnly = false) {
   if (isValidatePassedKeyOnly) {
     quoteObjectSchema = _.pick(quoteObjectSchema, Object.keys(quoteData));
   }
-  const schema = Joi.object(quoteObjectSchema);
+  const schema = Joi.object(quoteObjectSchema).min(1).required().messages({
+    "object.min": "Payload is missing!",
+  });
   return schema.validate(quoteData, { abortEarly: false });
 }
 

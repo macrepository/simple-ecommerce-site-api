@@ -37,7 +37,10 @@ function validateCustomer(customer, isValidatePassedKeyOnly = false) {
   if (isValidatePassedKeyOnly) {
     customerObjectSchema = _.pick(customerObjectSchema, Object.keys(customer));
   }
-  const schema = Joi.object(customerObjectSchema);
+
+  const schema = Joi.object(customerObjectSchema).min(1).required().messages({
+    "object.min": "Payload is missing!",
+  });
   return schema.validate(customer, { abortEarly: false });
 }
 
