@@ -2,7 +2,7 @@ const Joi = require("joi");
 
 const quoteItemSchema = {
   id: Joi.number().greater(0).label("Quote Item ID"),
-  quote_id: Joi.number().greater(0),
+  quote_id: Joi.number().greater(0).required(),
   name: Joi.string().max(50).required(),
   price: Joi.number().greater(0).max(9999999).precision(2).required(),
   quantity: Joi.number().min(1).max(999999).required(),
