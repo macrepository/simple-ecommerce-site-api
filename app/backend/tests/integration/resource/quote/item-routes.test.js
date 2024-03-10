@@ -146,4 +146,76 @@ describe("/api/quote/item", () => {
       });
     });
   });
+
+  describe("GET /:id", () => {
+    let itemId;
+    const exec = () => {
+      return request(server).get(`/api/quote/item/${itemId}`);
+    };
+
+    it("should return a 400 status if the quote item ID is invalid", async () => {
+      itemId = 0;
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.arrayContaining([
+          expect.objectContaining({
+            field: expect.any(String),
+            message: expect.any(String),
+          }),
+        ]),
+      });
+    });
+
+    it("should reutrn a 404 status if the quote item ID is not found", async () => {
+      itemId = 1;
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body).toMatchObject({
+        code: "not_found",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("should reutrn a 500 status if something goes wrong during getting the quote item", async () => {
+      itemId = 1;
+      const originalFn = QuoteItemModel.prototype.findByID;
+      QuoteItemModel.prototype.findByID = jest
+        .fn()
+        .mockRejectedValue(new Error("something happen in findByID process"));
+
+      const res = await exec();
+
+      QuoteItemModel.prototype.findByID = originalFn;
+
+      expect(res.status).toBe(500);
+      expect(res.body).toMatchObject({
+        code: "internal_server_error",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
+    it("should return a 200 status and quote item details if quote item ID is found", async () => {
+      [itemId] = await quoteItemModelInstance.save(quoteItemData);
+
+      const res = await exec();
+
+      expect(itemId).toBeGreaterThan(0);
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        code: "success",
+        message: expect.any(String),
+        body: expect.objectContaining({
+          id: expect.any(Number),
+          quote_id: expect.any(Number),
+        }),
+      });
+    });
+  });
 });
