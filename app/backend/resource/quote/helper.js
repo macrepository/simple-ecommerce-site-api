@@ -37,6 +37,7 @@ const quoteSchema = {
 /**
  * Validate quote data
  * @param {Object} quoteData
+ * @param {boolean} isValidatePassedKeyOnly
  * @returns {Object}
  */
 function validateQuote(quoteData, isValidatePassedKeyOnly = false) {

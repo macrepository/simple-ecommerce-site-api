@@ -30,6 +30,7 @@ const customerSchema = {
 /**
  * Validate customer details
  * @param {Object} customer
+ * @param {boolean} isValidatePassedKeyOnly
  * @returns {Object}
  */
 function validateCustomer(customer, isValidatePassedKeyOnly = false) {
