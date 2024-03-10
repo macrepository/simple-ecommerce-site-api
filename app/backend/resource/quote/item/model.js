@@ -29,6 +29,16 @@ class QuoteItemModel extends AbstractClass {
   }
 
   /**
+   * This async function finds an item by its ID and returns the data associated with it.
+   * @param {Number} itemId
+   * @returns {Promise<this>}
+   */
+  async findByID(itemId) {
+    this.data = await this.create().first().where("id", itemId);
+    return this;
+  }
+
+  /**
    * This function retrieves quote items based on a given quote ID and returns the data in a specific
    * model format.
    * @param {Number} quoteId

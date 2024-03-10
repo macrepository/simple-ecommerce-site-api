@@ -26,6 +26,24 @@ async function saveQuoteItem(ctx) {
   );
 }
 
+async function getQuoteItem(ctx) {
+  const itemId = ctx.params.id;
+
+  const item = (await quoteItemModelInstance.findByID(itemId)).getData();
+
+  if (!item) {
+    return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
+  }
+
+  return response(
+    ctx,
+    httpResponse.success,
+    httpResponse.success.message,
+    item
+  );
+}
+
 module.exports = {
   saveQuoteItem,
+  getQuoteItem,
 };

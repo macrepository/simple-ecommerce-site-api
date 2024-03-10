@@ -1,5 +1,5 @@
 const { validateQuoteItem } = require("./item/helper");
-const { saveQuoteItem } = require("./item/controller");
+const { saveQuoteItem, getQuoteItem } = require("./item/controller");
 const { validateQuote } = require("./helper");
 const {
   validateReqId,
@@ -17,7 +17,7 @@ const router = new Router({
 });
 
 router.post("/item/", validateReqBody(validateQuoteItem), saveQuoteItem);
-// router.get("/item/:quoteId/:id", catchErrors(getQuoteItem));
+router.get("/item/:id", validateReqId(validateQuoteItem), getQuoteItem);
 // router.patch("/item/:quoteId/:id", catchErrors(updateQuoteItem));
 // router.delete("/item/:quoteId/:id", catchErrors(deleteQuoteItem));
 

@@ -16,6 +16,8 @@ class AbstractClass {
   getData() {
     if (!this.data) return null;
 
+    if (Array.isArray(this.data) && this.data.length === 0) return null;
+
     return this.data;
   }
 }
