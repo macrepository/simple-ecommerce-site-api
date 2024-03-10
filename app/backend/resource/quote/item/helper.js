@@ -10,8 +10,23 @@ const quoteItemSchema = {
   row_total: Joi.number().greater(0).max(9999999).precision(2).required(),
 };
 
-function validateQuoteItem(quoteItemData) {
-  const schema = Joi.object(quoteItemSchema);
+/**
+ *
+ * @param {Object} quoteItemData
+ * @param {boolean} isValidatePassedKeyOnly
+ * @returns {Object}
+ */
+function validateQuoteItem(quoteItemData, isValidatePassedKeyOnly = false) {
+  let quoteItemObjectSchema = quoteItemSchema;
+  if (isValidatePassedKeyOnly) {
+    quoteItemObjectSchema = _.pick(
+      quoteItemObjectSchema,
+      Object.keys(quoteItemData)
+    );
+  }
+  const schema = Joi.object(quoteItemObjectSchema).min(1).required().messages({
+    "object.min": "Payload is missing!",
+  });
 
   return schema.validate(quoteItemData, { abortEarly: false });
 }
