@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const QuoteItemModel = require("./item/model");
 const AbstractClass = require("../../utilities/abstract-class");
 const knex = require("../../database/db");
@@ -26,10 +27,11 @@ class QuoteModel extends AbstractClass {
    */
   async save(quoteData) {
     return await knex.transaction(async (trx) => {
-      const { items, ...quote } = quoteData;
+      const items = quoteData?.items;
+      const quote = _.omit(quoteData, ["items"]);
       const [quoteId] = await trx(tableQuote).insert(quote);
 
-      if (Array.isArray(items)) {
+      if (items && Array.isArray(items)) {
         const quoteItems = items.map((item) => {
           item.quote_id = quoteId;
           return item;
