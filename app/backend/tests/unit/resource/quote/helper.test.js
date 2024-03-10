@@ -129,6 +129,12 @@ describe("resource/quote/helper", () => {
       );
     });
 
+    it("should return a joi validation error if passed an empty object and isValidatePassedKeyOnly is set to true", () => {
+      const { error } = validateQuote({}, true);
+
+      expect(error).toBeTruthy();
+    });
+
     it("should return null if customer data is valid", () => {
       const { error } = validateQuote(quoteData);
 
