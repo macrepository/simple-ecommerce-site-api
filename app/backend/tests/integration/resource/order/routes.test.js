@@ -1,9 +1,12 @@
+const OrderPaymentModel = require("../../../../resource/order/payment/model");
 const OrderItemModel = require("../../../../resource/order/item/model");
 const OrderModel = require("../../../../resource/order/model");
 const request = require("supertest");
+const _ = require("lodash");
 
 const orderModelInstance = new OrderModel();
 const orderItemModelInstance = new OrderItemModel();
+const orderPaymentModelInstance = new OrderPaymentModel();
 
 describe("/api/order", () => {
   let server;
@@ -22,29 +25,36 @@ describe("/api/order", () => {
       address: "cebu city",
       zip_code: "6000",
       email: "johndoe@gmail.com",
-      subtotal: "1500",
-      grandtotal: "1500",
+      subtotal: 1500,
+      grandtotal: 1500,
       items: [
         {
           name: "tshirt xl blue",
-          price: "1000",
-          quantity: "1",
-          product_id: "1",
-          row_total: "1000",
+          price: 1000,
+          quantity: 1,
+          product_id: 1,
+          row_total: 1000,
         },
         {
           name: "tshirt xs white",
-          price: "500",
-          quantity: "1",
-          product_id: "2",
-          row_total: "500",
+          price: 500,
+          quantity: 1,
+          product_id: 2,
+          row_total: 500,
         },
       ],
+      payment: {
+        method: "cod",
+        name: "Cash on delivery",
+        grandtotal: 1000,
+        status: "pending",
+      },
     };
   });
 
   afterEach(async () => {
     await server.close();
+    await orderPaymentModelInstance.create().delete();
     await orderItemModelInstance.create().delete();
     await orderModelInstance.create().delete();
   });
@@ -71,7 +81,9 @@ describe("/api/order", () => {
 
     it("should return a 409 status if the quote_id is already exist to the database", async () => {
       const savedOrderID = await orderModelInstance.save(orderData);
+
       const res = await exec();
+
       const order = (await orderModelInstance.findById(savedOrderID)).getData();
 
       expect(order.quote_id).toBe(orderData.quote_id);
@@ -116,6 +128,23 @@ describe("/api/order", () => {
 
     it("should return a 200 status if the order was succesfully saved to the database", async () => {
       const res = await exec();
+
+      const order = await orderModelInstance.findById(res.body.body);
+      const items = (await order.getItems()).getData();
+      const payment = (await order.getPayment()).getData();
+
+      expect(order.data).toMatchObject({
+        id: expect.any(Number),
+        date_of_birth: expect.anything(),
+        ..._.omit(orderData, ["date_of_birth", "items", "payment"]),
+      });
+
+      expect(items).toMatchObject([
+        expect.objectContaining(orderData.items[0]),
+        expect.objectContaining(orderData.items[1]),
+      ]);
+
+      expect(payment).toMatchObject(orderData.payment);
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
@@ -185,7 +214,13 @@ describe("/api/order", () => {
         message: expect.any(String),
         body: expect.objectContaining({
           id: expect.any(Number),
-          items: expect.objectContaining({}),
+          date_of_birth: expect.anything(),
+          ..._.omit(orderData, ["date_of_birth", "items", "payment"]),
+          items: expect.arrayContaining([
+            expect.objectContaining(orderData.items[0]),
+            expect.objectContaining(orderData.items[1]),
+          ]),
+          payment: expect.objectContaining(orderData.payment),
         }),
       });
     });
@@ -193,15 +228,12 @@ describe("/api/order", () => {
 
   describe("PATCH /:id", () => {
     let orderId;
-    const exec = () =>
-      request(server).patch(`/api/order/${orderId}`).send(orderData);
-
-    beforeEach(() => {
-      orderId = 1;
-    });
+    const exec = () => {
+      return request(server).patch(`/api/order/${orderId}`).send(orderData);
+    };
 
     it("should return a 400 status if the order ID is invalid", async () => {
-      orderData = {};
+      orderId = 0;
       const res = await exec();
 
       expect(res.status).toBe(400);
@@ -213,7 +245,8 @@ describe("/api/order", () => {
     });
 
     it("should return a 400 status if the order data is invalid", async () => {
-      orderData = { ...orderData, email: "" };
+      orderId = 1;
+      orderData = {};
 
       const res = await exec();
 
@@ -254,6 +287,8 @@ describe("/api/order", () => {
       orderData.items[0].order_id = orderId;
       orderData.items[1].id = 2;
       orderData.items[1].order_id = orderId;
+      orderData.payment.id = 1;
+      orderData.payment.order_id = orderId;
 
       const res = await exec();
 
@@ -281,25 +316,34 @@ describe("/api/order", () => {
     it("should return a 200 if successfully saved to the database", async () => {
       orderId = await orderModelInstance.save(orderData);
 
+      const order = await orderModelInstance.findById(orderId);
+      const items = (await order.getItems()).getData();
+      const payment = (await order.getPayment()).getData();
+
       orderData.first_name = "mark";
-      const items = (
-        await orderItemModelInstance.findByOrderID(orderId)
-      ).getData();
       items.map((item) => {
         delete item.created_at;
         delete item.updated_at;
         item.name = "edited";
         return item;
       });
+      orderData.payment = {
+        id: payment.id,
+        ...orderData.payment,
+        status: "paid",
+      };
 
       orderData = { ...orderData, items };
       const res = await exec();
-      const editedOrderData = await orderModelInstance.findById(orderId);
-      const editedOrderItems = await editedOrderData.getItems();
 
-      expect(editedOrderData.data.first_name).toBe("mark");
-      expect(editedOrderItems.data[0].name).toBe("edited");
-      expect(editedOrderItems.data[1].name).toBe("edited");
+      const editedOrder = await orderModelInstance.findById(orderId);
+      const editedItems = (await order.getItems()).getData();
+      const editedPayment = (await order.getPayment()).getData();
+
+      expect(editedOrder.data.first_name).toBe("mark");
+      expect(editedItems[0].name).toBe("edited");
+      expect(editedItems[1].name).toBe("edited");
+      expect(editedPayment.status).toBe("paid");
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
