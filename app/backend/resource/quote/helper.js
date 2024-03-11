@@ -1,5 +1,4 @@
 const { quoteItemSchema } = require("./item/helper");
-const { quotePaymentSchema } = require("./payment/helper");
 const moment = require("moment");
 const Joi = require("joi");
 const _ = require("lodash");
@@ -31,7 +30,6 @@ const quoteSchema = {
     ...quoteItemSchema,
     quote_id: Joi.number().greater(0),
   }),
-  paytment: Joi.object(quotePaymentSchema),
 };
 
 /**
