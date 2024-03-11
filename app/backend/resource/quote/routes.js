@@ -1,17 +1,6 @@
-const { validateQuotePayment } = require("./payment/helper");
-const {
-  saveQuotePayment,
-  getQuotePayment,
-  updateQuotePayment,
-  deleteQuotePayment,
-} = require("./payment/controller");
-const { validateQuoteItem } = require("./item/helper");
-const {
-  saveQuoteItem,
-  getQuoteItem,
-  updateQuoteItem,
-  deleteQuoteItem,
-} = require("./item/controller");
+const quotePaymentRoutes = require("./payment/routes");
+const quoteItemRoutes = require("./item/routes");
+
 const { validateQuote } = require("./helper");
 const {
   validateReqId,
@@ -23,42 +12,18 @@ const {
   updateQuote,
   deleteQuote,
 } = require("./controller");
+
 const Router = require("@koa/router");
 const router = new Router({
   prefix: "/api/quote",
 });
 
-router.post(
-  "/payment/",
-  validateReqBody(validateQuotePayment),
-  saveQuotePayment
+router.use(
+  "/payment",
+  quotePaymentRoutes.routes(),
+  quotePaymentRoutes.allowedMethods()
 );
-router.get(
-  "/payment/:id",
-  validateReqId(validateQuotePayment),
-  getQuotePayment
-);
-router.patch(
-  "/payment/:id",
-  validateReqId(validateQuotePayment),
-  validateReqBody(validateQuotePayment),
-  updateQuotePayment
-);
-router.delete(
-  "/payment/:id",
-  validateReqId(validateQuotePayment),
-  deleteQuotePayment
-);
-
-router.post("/item/", validateReqBody(validateQuoteItem), saveQuoteItem);
-router.get("/item/:id", validateReqId(validateQuoteItem), getQuoteItem);
-router.patch(
-  "/item/:id",
-  validateReqId(validateQuoteItem),
-  validateReqBody(validateQuoteItem),
-  updateQuoteItem
-);
-router.delete("/item/:id", validateReqId(validateQuoteItem), deleteQuoteItem);
+router.use("/item", quoteItemRoutes.routes(), quoteItemRoutes.allowedMethods());
 
 router.post("/", validateReqBody(validateQuote), saveQuote);
 router.get("/:id", validateReqId(validateQuote), getQuote);
