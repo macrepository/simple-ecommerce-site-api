@@ -4,9 +4,6 @@ const moment = require("moment");
 const Joi = require("joi");
 const _ = require("lodash");
 
-// Set to non-required because quote_id is not yet avaibale during saving the quote
-quoteItemSchema.quote_id = Joi.number().greater(0);
-
 const quoteSchema = {
   id: Joi.number().greater(0).label("Quote ID"),
   customer_id: Joi.number().greater(0).required(),
@@ -30,7 +27,10 @@ const quoteSchema = {
   email: Joi.string().max(50).email({ allowFullyQualified: true }).required(),
   subtotal: Joi.number().greater(0).max(9999999).precision(2).required(),
   grandtotal: Joi.number().greater(0).max(9999999).precision(2).required(),
-  items: Joi.array().items(quoteItemSchema),
+  items: Joi.array().items({
+    ...quoteItemSchema,
+    quote_id: Joi.number().greater(0),
+  }),
   paytment: Joi.object(quotePaymentSchema),
 };
 
