@@ -76,13 +76,13 @@ describe("resource/quote/item/helper", () => {
       expect(error).toBeTruthy();
     });
 
-    it("should return null if customer data is valid", () => {
+    it("should return null if quote item data is valid", () => {
       const { error } = validateQuoteItem(quoteItemData);
 
       expect(error).toBeUndefined();
     });
 
-    it("should return null if customer data is valid and isValidatePassedKeyOnly is set to true", () => {
+    it("should return null if quote item data is valid and isValidatePassedKeyOnly is set to true", () => {
       quoteItemData = _.pick(quoteItemData, ["price", "quantity"]);
       const { error } = validateQuoteItem(quoteItemData, true);
 
