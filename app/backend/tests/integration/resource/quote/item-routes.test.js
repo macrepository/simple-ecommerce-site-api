@@ -43,7 +43,7 @@ describe("/api/quote/item", () => {
 
   afterAll(async () => {
     await customerModelInstance.create().delete();
-    await quoteItemModelInstance.create().delete();
+    await quoteModelInstance.create().delete();
   });
 
   beforeEach(() => {

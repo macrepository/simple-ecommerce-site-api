@@ -43,7 +43,7 @@ describe("/api/quote/payment", () => {
 
   afterAll(async () => {
     await customerModelInstance.create().delete();
-    await quotePaymentModelInstance.create().delete();
+    await quoteModelInstance.create().delete();
   });
 
   beforeEach(() => {
