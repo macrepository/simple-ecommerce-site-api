@@ -43,7 +43,24 @@ async function getQuoteItem(ctx) {
   );
 }
 
+async function updateQuoteItem(ctx) {
+  const quoteItemId = ctx.params.id;
+  const quoteItemData = ctx.request.body;
+
+  const result = await quoteItemModelInstance.update(
+    quoteItemId,
+    quoteItemData
+  );
+
+  if (!result) {
+    return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
+  }
+
+  return response(ctx, httpResponse.success, httpResponse.success.message);
+}
+
 module.exports = {
   saveQuoteItem,
   getQuoteItem,
+  updateQuoteItem,
 };

@@ -1,5 +1,9 @@
 const { validateQuoteItem } = require("./item/helper");
-const { saveQuoteItem, getQuoteItem } = require("./item/controller");
+const {
+  saveQuoteItem,
+  getQuoteItem,
+  updateQuoteItem,
+} = require("./item/controller");
 const { validateQuote } = require("./helper");
 const {
   validateReqId,
@@ -18,7 +22,12 @@ const router = new Router({
 
 router.post("/item/", validateReqBody(validateQuoteItem), saveQuoteItem);
 router.get("/item/:id", validateReqId(validateQuoteItem), getQuoteItem);
-// router.patch("/item/:quoteId/:id", catchErrors(updateQuoteItem));
+router.patch(
+  "/item/:id",
+  validateReqId(validateQuoteItem),
+  validateReqBody(validateQuoteItem),
+  updateQuoteItem
+);
 // router.delete("/item/:quoteId/:id", catchErrors(deleteQuoteItem));
 
 router.post("/", validateReqBody(validateQuote), saveQuote);

@@ -57,7 +57,7 @@ class QuoteItemModel extends AbstractClass {
    * @returns {Promise<Number>}
    */
   async update(itemId, quoteItem, trx = null) {
-    let query = this.create().where("id", itemId).insert(quoteItem);
+    let query = this.create().where("id", itemId).update(quoteItem);
     if (trx) query.transacting(trx);
 
     return await query;
