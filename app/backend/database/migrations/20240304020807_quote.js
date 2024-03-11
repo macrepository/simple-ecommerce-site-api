@@ -24,11 +24,7 @@ exports.up = function (knex) {
       .comment("Customer Gender");
     table.string("address", 255).notNullable().comment("Customer Address");
     table.string("zip_code", 20).notNullable().comment("Customer Zip Code");
-    table
-      .string("email", 50)
-      .notNullable()
-      .unique()
-      .comment("Customer Email Address");
+    table.string("email", 50).notNullable().comment("Customer Email Address");
     table.float("subtotal", 9, 2).notNullable().comment("Quote/Cart Subtotal");
     table
       .float("grandtotal", 9, 2)
