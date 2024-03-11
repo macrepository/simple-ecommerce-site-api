@@ -69,14 +69,12 @@ describe("/api/order", () => {
       });
     });
 
-    it("should return a 409 status if the email is already exist to the database", async () => {
-      await orderModelInstance.save(orderData);
+    it("should return a 409 status if the quote_id is already exist to the database", async () => {
+      const savedOrderID = await orderModelInstance.save(orderData);
       const res = await exec();
-      const order = (
-        await orderModelInstance.findByEmail(orderData.email)
-      ).getData();
+      const order = (await orderModelInstance.findById(savedOrderID)).getData();
 
-      expect(order.email).toBe(orderData.email);
+      expect(order.quote_id).toBe(orderData.quote_id);
       expect(res.status).toBe(409);
       expect(res.body).toMatchObject({
         code: "conflict",
@@ -232,11 +230,11 @@ describe("/api/order", () => {
       });
     });
 
-    it("should return a 409 status if the order email is already exist in the database", async () => {
+    it("should return a 409 status if the quote_id is already exist to the database", async () => {
       const { items, ...purelyOrderData } = orderData;
       orderId = await orderModelInstance.save(purelyOrderData);
 
-      purelyOrderData.email = "a@gmail.com";
+      purelyOrderData.quote_id += 1;
       await orderModelInstance.save(purelyOrderData);
 
       orderData = purelyOrderData;

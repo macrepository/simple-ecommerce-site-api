@@ -86,14 +86,10 @@ describe("/api/quote", () => {
       });
     });
 
-    it("should return a 409 status if the email is already exist to the database", async () => {
-      await quoteModelInstance.save(quoteData);
+    it("should return a 409 status if the customer_id is not found to the customer table reference", async () => {
+      quoteData.customer_id += 1;
       const res = await exec();
-      const quote = (
-        await quoteModelInstance.findByEmail(quoteData.email)
-      ).getData();
 
-      expect(quote.email).toBe(quoteData.email);
       expect(res.status).toBe(409);
       expect(res.body).toMatchObject({
         code: "conflict",
@@ -249,14 +245,12 @@ describe("/api/quote", () => {
       });
     });
 
-    it("should return a 409 status if the quote email is already exist in the database", async () => {
+    it("should return a 409 status if the customer_id is not found to the customer table reference", async () => {
       const { items, ...purelyQuoteData } = quoteData;
       quoteId = await quoteModelInstance.save(purelyQuoteData);
 
-      purelyQuoteData.email = "a@gmail.com";
-      await quoteModelInstance.save(purelyQuoteData);
+      quoteData.customer_id += 1;
 
-      quoteData = purelyQuoteData;
       const res = await exec();
 
       expect(res.status).toBe(409);
