@@ -7,7 +7,7 @@ exports.up = function (knex) {
     table.increments("id").primary().comment("Payment ID");
     table.string("method", 10).notNullable().comment("Payment Method Code");
     table.string("name", 50).notNullable().comment("Payment Method Name");
-    table.timestamp(true, true);
+    table.timestamps(true, true);
   });
 };
 

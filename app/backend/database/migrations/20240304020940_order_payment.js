@@ -8,6 +8,7 @@ exports.up = function (knex) {
     table
       .integer("order_id")
       .unsigned()
+      .unique()
       .comment("Order Reference")
       .references("id")
       .inTable("order")
@@ -19,7 +20,7 @@ exports.up = function (knex) {
       .enu("status", ["pending", "paid", "declined", "system_error"])
       .notNullable()
       .comment("Payment Status");
-    table.timestamp(true, true);
+    table.timestamps(true, true);
   });
 };
 

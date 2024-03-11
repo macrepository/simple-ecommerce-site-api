@@ -22,7 +22,7 @@ exports.up = function (knex) {
       .enu("role", ["admin", "order_management", "product_management"])
       .notNullable()
       .comment("User Admin Role");
-    table.timestamp(true, true);
+    table.timestamps(true, true);
   });
 };
 

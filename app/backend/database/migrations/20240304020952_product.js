@@ -18,7 +18,7 @@ exports.up = function (knex) {
     table.boolean("is_active").notNullable().comment("Product Active Status");
     table.string("thumbnail", 50).comment("Product Thumbnail");
     table.text("gallery").comment("Product Gallery Path in JSON Format");
-    table.timestamp(true, true);
+    table.timestamps(true, true);
   });
 };
 

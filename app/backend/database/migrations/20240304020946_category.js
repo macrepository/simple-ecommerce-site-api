@@ -2,13 +2,13 @@
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.up = function(knex) {
+exports.up = function (knex) {
   return knex.schema.createTable("category", (table) => {
     table.increments("id").primary().comment("Category ID");
     table.string("name", 50).notNullable().comment("Category Name");
     table.string("thumbnail", 50).notNullable().comment("Category Thumbnail");
     table.boolean("is_active").notNullable().comment("Category Status");
-    table.timestamp(true, true);
+    table.timestamps(true, true);
   });
 };
 
@@ -16,6 +16,6 @@ exports.up = function(knex) {
  * @param { import("knex").Knex } knex
  * @returns { Promise<void> }
  */
-exports.down = function(knex) {
+exports.down = function (knex) {
   return knex.schema.dropTableIfExists("category");
 };
