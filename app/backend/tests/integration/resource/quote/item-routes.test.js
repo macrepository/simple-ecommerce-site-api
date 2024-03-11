@@ -218,4 +218,110 @@ describe("/api/quote/item", () => {
       });
     });
   });
+
+  describe("PATCH /:id", () => {
+    let itemId;
+
+    const exec = () => {
+      return request(server)
+        .patch(`/api/quote/item/${itemId}`)
+        .send(quoteItemData);
+    };
+
+    it("should return a 400 status if the quote item ID is not greater than 0", async () => {
+      itemId = 0;
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.arrayContaining([
+          expect.objectContaining({
+            field: expect.any(String),
+            message: expect.any(String),
+          }),
+        ]),
+      });
+    });
+
+    it("should return a 400 status if the quote item data is invalid", async () => {
+      itemId = 1;
+      quoteItemData = {};
+      const res = await exec();
+
+      expect(res.status).toBe(400);
+      expect(res.body).toMatchObject({
+        code: "bad_request",
+        message: expect.any(String),
+        body: expect.arrayContaining([
+          expect.objectContaining({
+            field: expect.any(String),
+            message: expect.any(String),
+          }),
+        ]),
+      });
+    });
+
+    it("should return a 404 status if the quote item ID is not found", async () => {
+      [itemId] = await quoteItemModelInstance.save(quoteItemData);
+      itemId = itemId + 1;
+      const res = await exec();
+
+      expect(res.status).toBe(404);
+      expect(res.body).toMatchObject({
+        code: "not_found",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+
+    it("should return a 409 status if quote ID reference is not found", async () => {
+      [itemId] = await quoteItemModelInstance.save(quoteItemData);
+      quoteItemData.quote_id += 1;
+
+      const res = await exec();
+
+      expect(itemId).toBeGreaterThan(0);
+      expect(res.status).toBe(409);
+      expect(res.body).toMatchObject({
+        code: "conflict",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
+    it("should return a 500 status if something goes wrong during the update item process", async () => {
+      itemId = 1;
+      const originalFn = QuoteItemModel.prototype.update;
+      QuoteItemModel.prototype.update = jest
+        .fn()
+        .mockRejectedValue(new Error("something happen during update process"));
+
+      const res = await exec();
+
+      QuoteItemModel.prototype.update = originalFn;
+
+      expect(res.status).toBe(500);
+      expect(res.body).toMatchObject({
+        code: "internal_server_error",
+        message: expect.any(String),
+        body: expect.anything(),
+      });
+    });
+
+    it("should return a 200 status if quote item successfully updated", async () => {
+      [itemId] = await quoteItemModelInstance.save(quoteItemData);
+
+      const res = await exec();
+
+      expect(itemId).toBeGreaterThan(0);
+      expect(res.status).toBe(200);
+      expect(res.body).toMatchObject({
+        code: "success",
+        message: expect.any(String),
+      });
+      expect(res.body).toHaveProperty("body");
+    });
+  });
 });
