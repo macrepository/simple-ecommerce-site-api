@@ -1,3 +1,10 @@
+const { validateQuotePayment } = require("./payment/helper");
+const {
+  saveQuotePayment,
+  getQuotePayment,
+  updateQuotePayment,
+  deleteQuotePayment,
+} = require("./payment/controller");
 const { validateQuoteItem } = require("./item/helper");
 const {
   saveQuoteItem,
@@ -21,6 +28,28 @@ const router = new Router({
   prefix: "/api/quote",
 });
 
+router.post(
+  "/payment/",
+  validateReqBody(validateQuotePayment),
+  saveQuotePayment
+);
+router.get(
+  "/payment/:id",
+  validateReqId(validateQuotePayment),
+  getQuotePayment
+);
+router.patch(
+  "/payment/:id",
+  validateReqId(validateQuotePayment),
+  validateReqBody(validateQuotePayment),
+  updateQuotePayment
+);
+router.delete(
+  "/payment/:id",
+  validateReqId(validateQuotePayment),
+  deleteQuotePayment
+);
+
 router.post("/item/", validateReqBody(validateQuoteItem), saveQuoteItem);
 router.get("/item/:id", validateReqId(validateQuoteItem), getQuoteItem);
 router.patch(
@@ -40,10 +69,5 @@ router.patch(
   updateQuote
 );
 router.delete("/:id", validateReqId(validateQuote), deleteQuote);
-
-// router.post("/payment/:quoteId", catchErrors(saveQuotePayment));
-// router.get("/payment/:quoteId/:id", catchErrors(getQuotePayment));
-// router.patch("/payment/:quoteId/:id", catchErrors(updateQuotePayment));
-// router.delete("/payment/:quoteId/:id", catchErrors(deleteQuotePayment));
 
 module.exports = router;
