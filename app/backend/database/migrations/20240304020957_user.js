@@ -12,9 +12,16 @@ exports.up = function (knex) {
       .notNullable()
       .unique()
       .comment("User Email Address");
-    table.string("username", 20).notNullable().comment("User Username");
+    table
+      .string("username", 20)
+      .notNullable()
+      .unique()
+      .comment("User Username");
     table.string("password", 255).notNullable().comment("User Login Password");
-    table.enu("role", ["admin", "order_management", "product_management"]).notNullable().comment("User Admin Role");
+    table
+      .enu("role", ["admin", "order_management", "product_management"])
+      .notNullable()
+      .comment("User Admin Role");
     table.timestamp(true, true);
   });
 };
@@ -24,5 +31,5 @@ exports.up = function (knex) {
  * @returns { Promise<void> }
  */
 exports.down = function (knex) {
-    return knex.schema.dropTableIfExists("user");
+  return knex.schema.dropTableIfExists("user");
 };
