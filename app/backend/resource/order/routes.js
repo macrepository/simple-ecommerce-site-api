@@ -1,18 +1,6 @@
-const { validateOrderPayment } = require("./payment/helper");
-const {
-  saveOrderPayment,
-  getOrderPayment,
-  updateOrderPayment,
-  deleteOrderPayment,
-} = require("./payment/controller");
+const orderPaymentRoutes = require("./payment/routes");
+const orderItemRoutes = require("./item/routes");
 
-const { validateOrderItem } = require("./item/helper");
-const {
-  saveOrderItem,
-  getOrderItem,
-  updateOrderItem,
-  deleteOrderItem,
-} = require("./item/controller");
 const { validateOrder } = require("./helper");
 const {
   validateReqId,
@@ -24,42 +12,18 @@ const {
   updateOrder,
   deleteOrder,
 } = require("./controller");
+
 const Router = require("@koa/router");
 const router = new Router({
   prefix: "/api/order",
 });
 
-router.post(
-  "/payment/",
-  validateReqBody(validateOrderPayment),
-  saveOrderPayment
+router.use(
+  "/payment",
+  orderPaymentRoutes.routes(),
+  orderPaymentRoutes.allowedMethods()
 );
-router.get(
-  "/payment/:id",
-  validateReqId(validateOrderPayment),
-  getOrderPayment
-);
-router.patch(
-  "/payment/:id",
-  validateReqId(validateOrderPayment),
-  validateReqBody(validateOrderPayment),
-  updateOrderPayment
-);
-router.delete(
-  "/payment/:id",
-  validateReqId(validateOrderPayment),
-  deleteOrderPayment
-);
-
-router.post("/item/", validateReqBody(validateOrderItem), saveOrderItem);
-router.get("/item/:id", validateReqId(validateOrderItem), getOrderItem);
-router.patch(
-  "/item/:id",
-  validateReqId(validateOrderItem),
-  validateReqBody(validateOrderItem),
-  updateOrderItem
-);
-router.delete("/item/:id", validateReqId(validateOrderItem), deleteOrderItem);
+router.use("/item", orderItemRoutes.routes(), orderItemRoutes.allowedMethods());
 
 router.post("/", validateReqBody(validateOrder), saveOrder);
 router.get("/:id", validateReqId(validateOrder), getOrder);
