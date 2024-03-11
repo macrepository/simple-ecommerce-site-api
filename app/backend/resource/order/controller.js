@@ -32,10 +32,12 @@ async function getOrder(ctx) {
     return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
   }
 
-  const items = await order.getItems();
+  const items = (await order.getItems()).getData();
+  const payment = (await order.getPayment()).getData();
   const orderData = {
-    ...order?.data,
-    items: items?.data,
+    ...order.getData(),
+    items,
+    payment,
   };
 
   return response(

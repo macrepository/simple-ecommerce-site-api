@@ -1,15 +1,18 @@
 const _ = require("lodash");
 const OrderItemModel = require("./item/model");
+const OrderPaymentModel = require("./payment/model");
 const AbstractClass = require("../../utilities/abstract-class");
 const knex = require("../../database/db");
 const tableOrder = "order";
 
 const orderItemModelInstance = new OrderItemModel();
+const orderPaymentModelInstance = new OrderPaymentModel();
 
 class OrderModel extends AbstractClass {
   constructor() {
     super();
     this.item = orderItemModelInstance;
+    this.payment = orderPaymentModelInstance;
   }
 
   /**
@@ -28,7 +31,8 @@ class OrderModel extends AbstractClass {
   async save(orderData) {
     return await knex.transaction(async (trx) => {
       const items = orderData?.items;
-      const order = _.omit(orderData, ["items"]);
+      const payment = orderData?.payment;
+      const order = _.omit(orderData, ["items", "payment"]);
       const [orderId] = await trx(tableOrder).insert(order);
 
       if (items && Array.isArray(items)) {
@@ -38,6 +42,12 @@ class OrderModel extends AbstractClass {
         });
 
         await this.item.save(orderItems, trx);
+      }
+
+      if (payment) {
+        payment.order_id = orderId;
+
+        await this.payment.save(payment, trx);
       }
 
       return orderId;
@@ -79,6 +89,19 @@ class OrderModel extends AbstractClass {
   }
 
   /**
+   * Get Order Payment
+   * @returns {OrderPaymentModel}
+   */
+  async getPayment() {
+    const orderId = this.data?.id;
+
+    if (!orderId) throw new Error("Order not loaded or does not exist.");
+
+    this.payment = await this.payment.findByOrderID(orderId);
+    return this.payment;
+  }
+
+  /**
    * The `update` function asynchronously updates a order record with the specified id.
    * @param {Number} orderId
    * @param {Object} orderData
@@ -86,17 +109,26 @@ class OrderModel extends AbstractClass {
    */
   async update(orderId, orderData) {
     return await knex.transaction(async (trx) => {
-      const { items, ...order } = orderData;
+      const items = orderData?.items;
+      const payment = orderData?.payment;
+      const order = _.omit(orderData, ["items", "payment"]);
+
       const updateOrder = await trx(tableOrder)
         .where("id", orderId)
         .update(order);
 
-      let updateOrderItem = [true];
-      if (Array.isArray(items)) {
-        updateOrderItem = await this.item.bulkUpdate(items, trx);
-      }
+      if (!updateOrder) return false;
 
-      return updateOrder === 1 && updateOrderItem.every((r) => r === 1);
+      let updateOrderItems =
+        items && Array.isArray(items)
+          ? await this.item.bulkUpdate(items, trx)
+          : [true];
+
+      if (!updateOrderItems.every((result) => result === 1)) return false;
+
+      return payment
+        ? await this.payment.update(payment.id, payment, trx)
+        : true;
     });
   }
 

@@ -45,7 +45,7 @@ class OrderPaymentModel extends AbstractClass {
    * @returns {Promise<this>}
    */
   async findByOrderID(orderId) {
-    this.data = await this.create().where("order_id", orderId);
+    this.data = await this.create().first().where("order_id", orderId);
     return this;
   }
 
