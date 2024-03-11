@@ -6,7 +6,7 @@ exports.up = function (knex) {
   return knex.schema.createTable("order", (table) => {
     table.increments("id").primary().comment("Order ID");
     table.integer("customer_id").notNullable().comment("Customer ID");
-    table.integer("quote_id").notNullable().comment("Quote ID");
+    table.integer("quote_id").notNullable().unique().comment("Quote ID");
     table
       .enu("status", ["pending", "processing", "complete", "cancelled"])
       .notNullable()
