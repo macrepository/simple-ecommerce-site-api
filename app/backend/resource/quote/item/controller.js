@@ -59,8 +59,21 @@ async function updateQuoteItem(ctx) {
   return response(ctx, httpResponse.success, httpResponse.success.message);
 }
 
+async function deleteQuoteItem(ctx) {
+  const quoteItemId = ctx.params.id;
+
+  const result = await quoteItemModelInstance.delete(quoteItemId);
+
+  if (!result) {
+    return response(ctx, httpResponse.notFound, httpResponse.notFound.message);
+  }
+
+  return response(ctx, httpResponse.success, httpResponse.success.message);
+}
+
 module.exports = {
   saveQuoteItem,
   getQuoteItem,
   updateQuoteItem,
+  deleteQuoteItem,
 };

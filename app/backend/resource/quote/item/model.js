@@ -86,6 +86,15 @@ class QuoteItemModel extends AbstractClass {
 
     return await Promise.all(updateItems);
   }
+
+  /**
+   * This asynchronous function deletes a record with a specific ID from a database table.
+   * @param {Number} quoteItemId
+   * @returns {Promise<Number>}
+   */
+  async delete(quoteItemId) {
+    return await this.create().where("id", quoteItemId).delete();
+  }
 }
 
 module.exports = QuoteItemModel;

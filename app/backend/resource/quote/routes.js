@@ -3,6 +3,7 @@ const {
   saveQuoteItem,
   getQuoteItem,
   updateQuoteItem,
+  deleteQuoteItem,
 } = require("./item/controller");
 const { validateQuote } = require("./helper");
 const {
@@ -28,7 +29,7 @@ router.patch(
   validateReqBody(validateQuoteItem),
   updateQuoteItem
 );
-// router.delete("/item/:quoteId/:id", catchErrors(deleteQuoteItem));
+router.delete("/item/:id", validateReqId(validateQuoteItem), deleteQuoteItem);
 
 router.post("/", validateReqBody(validateQuote), saveQuote);
 router.get("/:id", validateReqId(validateQuote), getQuote);
