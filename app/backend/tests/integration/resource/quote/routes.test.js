@@ -2,6 +2,7 @@ const QuoteItemModel = require("../../../../resource/quote/item/model");
 const QuoteModel = require("../../../../resource/quote/model");
 const CustomerModel = require("../../../../resource/customer/model");
 const request = require("supertest");
+const _ = require("lodash");
 
 const quoteModelInstance = new QuoteModel();
 const quoteItemModelInstance = new QuoteItemModel();
@@ -39,22 +40,22 @@ describe("/api/quote", () => {
       customer_id: customerId,
       is_active: true,
       ...customerData,
-      subtotal: "1500",
-      grandtotal: "1500",
+      subtotal: 1500,
+      grandtotal: 1500,
       items: [
         {
           name: "tshirt xl blue",
-          price: "1000",
-          quantity: "1",
-          product_id: "1",
-          row_total: "1000",
+          price: 1000,
+          quantity: 1,
+          product_id: 1,
+          row_total: 1000,
         },
         {
           name: "tshirt xs white",
-          price: "500",
-          quantity: "1",
-          product_id: "2",
-          row_total: "500",
+          price: 500,
+          quantity: 1,
+          product_id: 2,
+          row_total: 500,
         },
       ],
     };
@@ -132,6 +133,21 @@ describe("/api/quote", () => {
     it("should return a 200 status if the quote was succesfully saved to the database", async () => {
       const res = await exec();
 
+      const quote = await quoteModelInstance.findById(res.body.body);
+      const items = (await quote.getItems()).getData();
+
+      expect(quote.getData()).toMatchObject({
+        id: expect.any(Number),
+        is_active: 1,
+        date_of_birth: expect.anything(),
+        ..._.omit(quoteData, ["is_active", "date_of_birth", "items"]),
+      });
+
+      expect(items).toMatchObject([
+        expect.objectContaining(quoteData.items[0]),
+        expect.objectContaining(quoteData.items[1]),
+      ]);
+
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
         code: "success",
@@ -194,13 +210,21 @@ describe("/api/quote", () => {
       quoteId = await quoteModelInstance.save(quoteData);
       const res = await exec();
 
+      console.log("res.body", res.body);
+
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({
         code: "success",
         message: expect.any(String),
         body: expect.objectContaining({
           id: expect.any(Number),
-          items: expect.objectContaining({}),
+          is_active: 1,
+          date_of_birth: expect.anything(),
+          ..._.omit(quoteData, ["is_active", "date_of_birth", "items"]),
+          items: expect.arrayContaining([
+            expect.objectContaining(quoteData.items[0]),
+            expect.objectContaining(quoteData.items[1]),
+          ]),
         }),
       });
     });
@@ -208,15 +232,12 @@ describe("/api/quote", () => {
 
   describe("PATCH /:id", () => {
     let quoteId;
-    const exec = () =>
-      request(server).patch(`/api/quote/${quoteId}`).send(quoteData);
-
-    beforeEach(() => {
-      quoteId = 1;
-    });
+    const exec = () => {
+      return request(server).patch(`/api/quote/${quoteId}`).send(quoteData);
+    };
 
     it("should return a 400 status if the quote ID is invalid", async () => {
-      quoteData = {};
+      quoteId = 0;
       const res = await exec();
 
       expect(res.status).toBe(400);
@@ -228,7 +249,8 @@ describe("/api/quote", () => {
     });
 
     it("should return a 400 status if the quote data is invalid", async () => {
-      quoteData = { ...quoteData, email: "" };
+      quoteId = 1;
+      quoteData = {};
 
       const res = await exec();
 
@@ -308,11 +330,11 @@ describe("/api/quote", () => {
       quoteData = { ...quoteData, items };
       const res = await exec();
       const editedQuoteData = await quoteModelInstance.findById(quoteId);
-      const editedQuoteItems = await editedQuoteData.getItems();
+      const editedQuoteItems = (await editedQuoteData.getItems()).getData();
 
-      expect(editedQuoteData.data.first_name).toBe("mark");
-      expect(editedQuoteItems.data[0].name).toBe("edited");
-      expect(editedQuoteItems.data[1].name).toBe("edited");
+      expect(editedQuoteData.getData().first_name).toBe("mark");
+      expect(editedQuoteItems[0].name).toBe("edited");
+      expect(editedQuoteItems[1].name).toBe("edited");
 
       expect(res.status).toBe(200);
       expect(res.body).toMatchObject({

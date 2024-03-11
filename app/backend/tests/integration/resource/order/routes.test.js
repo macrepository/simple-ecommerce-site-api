@@ -133,7 +133,7 @@ describe("/api/order", () => {
       const items = (await order.getItems()).getData();
       const payment = (await order.getPayment()).getData();
 
-      expect(order.data).toMatchObject({
+      expect(order.getData()).toMatchObject({
         id: expect.any(Number),
         date_of_birth: expect.anything(),
         ..._.omit(orderData, ["date_of_birth", "items", "payment"]),
@@ -340,7 +340,7 @@ describe("/api/order", () => {
       const editedItems = (await order.getItems()).getData();
       const editedPayment = (await order.getPayment()).getData();
 
-      expect(editedOrder.data.first_name).toBe("mark");
+      expect(editedOrder.getData().first_name).toBe("mark");
       expect(editedItems[0].name).toBe("edited");
       expect(editedItems[1].name).toBe("edited");
       expect(editedPayment.status).toBe("paid");
