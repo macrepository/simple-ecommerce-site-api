@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "export NODE_ENV=development && nodemon app.js",
     "deploy": "export NODE_ENV=production && node app.js",
-    "test": "export NODE_ENV=test && jest --watchAll --verbose --coverage --detectOpenHandles",
+    "test": "export NODE_ENV=test && knex migrate:rollback && knex migrate:latest && jest --watchAll --verbose --coverage --detectOpenHandles",
     "migrate:init": "knex init",
     "migrate:make": "knex migrate:make",
     "migrate:latest": "knex migrate:latest",
