@@ -4,6 +4,7 @@ const customer = require("../resource/customer/routes");
 const order = require("../resource/order/routes");
 const quote = require("../resource/quote/routes");
 const payment = require("../resource/payment/routes");
+const category = require("../resource/category/routes");
 const { catchErrors } = require("../middleware/async-exception-handler");
 
 module.exports = function (app) {
@@ -16,4 +17,5 @@ module.exports = function (app) {
   app.use(quote.routes()).use(quote.allowedMethods());
   app.use(order.routes()).use(order.allowedMethods());
   app.use(payment.routes()).use(payment.allowedMethods());
+  app.use(category.routes()).use(category.allowedMethods());
 };
