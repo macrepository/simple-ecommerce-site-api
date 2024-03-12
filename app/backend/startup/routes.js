@@ -1,4 +1,5 @@
 const bodyParser = require("koa-bodyparser");
+const user = require("../resource/user/routes");
 const customer = require("../resource/customer/routes");
 const order = require("../resource/order/routes");
 const quote = require("../resource/quote/routes");
@@ -10,6 +11,7 @@ module.exports = function (app) {
 
   app.use(catchErrors);
 
+  app.use(user.routes()).use(user.allowedMethods());
   app.use(customer.routes()).use(customer.allowedMethods());
   app.use(quote.routes()).use(quote.allowedMethods());
   app.use(order.routes()).use(order.allowedMethods());
