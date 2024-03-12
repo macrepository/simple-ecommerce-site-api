@@ -37,7 +37,7 @@ function validateReqId(validator) {
   };
 }
 
-function validateReqLogin(validator) {
+function validateCustomerLogin(validator) {
   return async (ctx, next) => {
     const { email, password } = ctx.request.body;
     const { error } = validator({ email, password }, true);
@@ -55,8 +55,27 @@ function validateReqLogin(validator) {
   };
 }
 
+function validateUserLogin(validator) {
+  return async (ctx, next) => {
+    const { username, password } = ctx.request.body;
+    const { error } = validator({ username, password }, true);
+
+    if (error) {
+      return response(
+        ctx,
+        httpResponse.badRequest,
+        httpResponse.badRequest.message.invalidRequest,
+        joiErrorFormatter(error.details)
+      );
+    }
+
+    await next();
+  };
+}
+
 module.exports = {
   validateReqBody,
   validateReqId,
-  validateReqLogin,
+  validateCustomerLogin,
+  validateUserLogin,
 };
