@@ -448,12 +448,12 @@ describe("/api/user", () => {
 
     beforeEach(() => {
       payload = {
-        email: userData.email,
+        username: userData.username,
         password: userData.password,
       };
     });
 
-    it("should return a 400 status if the user email or password is invalid", async () => {
+    it("should return a 400 status if the user username or password is invalid", async () => {
       payload = {};
 
       const res = await exec();
@@ -465,7 +465,7 @@ describe("/api/user", () => {
         body: expect.arrayContaining([
           expect.objectContaining(
             {
-              field: "email",
+              field: "username",
               message: expect.any(String),
             },
             {
@@ -477,7 +477,7 @@ describe("/api/user", () => {
       });
     });
 
-    it("should return a 401 status if the user email is not exist", async () => {
+    it("should return a 401 status if the user username is not exist", async () => {
       const res = await exec();
 
       expect(res.status).toBe(401);
@@ -507,16 +507,16 @@ describe("/api/user", () => {
     });
 
     it("should return a 500 status if something goes wrong during the user login process", async () => {
-      const originalFn = UserModel.prototype.findByEmail;
-      UserModel.prototype.findByEmail = jest
+      const originalFn = UserModel.prototype.findByUsername;
+      UserModel.prototype.findByUsername = jest
         .fn()
         .mockRejectedValue(
-          new Error("something happen during user login findByEmail process")
+          new Error("something happen during user login findByUsername process")
         );
 
       const res = await exec();
 
-      UserModel.prototype.findByEmail = originalFn;
+      UserModel.prototype.findByUsername = originalFn;
 
       expect(res.status).toBe(500);
       expect(res.body).toMatchObject({
