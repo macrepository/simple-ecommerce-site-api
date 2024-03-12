@@ -2,7 +2,7 @@ const { validateUser } = require("./helper");
 const {
   validateReqId,
   validateReqBody,
-  validateReqLogin,
+  validateUserLogin,
 } = require("../../middleware/joi-validate");
 const {
   saveUser,
@@ -20,7 +20,7 @@ const router = new Router({
 });
 
 router.get("/account", userAuth, userAccount);
-router.post("/login", validateReqLogin(validateUser), loginUser);
+router.post("/login", validateUserLogin(validateUser), loginUser);
 
 router.post("/", validateReqBody(validateUser), saveUser);
 router.get("/", getUser);

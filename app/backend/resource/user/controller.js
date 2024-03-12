@@ -101,9 +101,9 @@ async function deleteUser(ctx) {
  * @returns
  */
 async function loginUser(ctx) {
-  const { email, password } = ctx.request.body;
+  const { username, password } = ctx.request.body;
 
-  const user = (await userModelInstance.findByEmail(email)).getData();
+  const user = (await userModelInstance.findByUsername(username)).getData();
 
   if (!user) {
     return response(

@@ -72,6 +72,18 @@ class UserModel extends AbstractClass {
   }
 
   /**
+   * The function findByUsername asynchronously retrieves a user record based on the provided username
+   * address and returns the data in the format specified by the UserModel.
+   * @param {string} username
+   * @returns {Promise<this>}
+   */
+  async findByUsername(username) {
+    this.data = await this.create().first().where("username", username);
+
+    return this;
+  }
+
+  /**
    * The `update` function asynchronously updates a user record with the specified id.
    * @param {Number} id
    * @param {Object} user
