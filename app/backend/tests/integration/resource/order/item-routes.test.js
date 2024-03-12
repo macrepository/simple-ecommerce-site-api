@@ -90,7 +90,7 @@ describe("/api/order/item", () => {
       });
     });
 
-    it("should return a 409 status if the order ID reference is not exist", async () => {
+    it("should return a 409 status if the order ID reference does not exist", async () => {
       orderItemData.order_id += 1;
 
       const res = await exec();

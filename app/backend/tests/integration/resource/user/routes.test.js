@@ -477,7 +477,7 @@ describe("/api/user", () => {
       });
     });
 
-    it("should return a 401 status if the user username is not exist", async () => {
+    it("should return a 401 status if the user username does not exist", async () => {
       const res = await exec();
 
       expect(res.status).toBe(401);

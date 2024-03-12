@@ -177,13 +177,13 @@ describe("resource/order/helper", () => {
       expect(error).toBeTruthy();
     });
 
-    it("should return null if customer data is valid", () => {
+    it("should return null if order data is valid", () => {
       const { error } = validateOrder(orderData);
 
       expect(error).toBeUndefined();
     });
 
-    it("should return null if customer data is valid and isValidatePassedKeyOnly is set to true", () => {
+    it("should return null if order data is valid and isValidatePassedKeyOnly is set to true", () => {
       orderData = _.pick(orderData, ["first_name", "email"]);
       const { error } = validateOrder(orderData, true);
 

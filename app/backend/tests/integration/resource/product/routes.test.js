@@ -88,7 +88,7 @@ describe("/api/product", () => {
       });
     });
 
-    it("should return a 409 status if the category ID reference is not exist", async () => {
+    it("should return a 409 status if the category ID reference does not exist", async () => {
       productData.category_id += 1;
 
       const res = await exec();

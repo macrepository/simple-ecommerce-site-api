@@ -101,7 +101,7 @@ describe("/api/quote/payment", () => {
       });
     });
 
-    it("should return a 409 status if the quote ID reference is not exist", async () => {
+    it("should return a 409 status if the quote ID reference does not exist", async () => {
       quotePaymentData.quote_id += 1;
 
       const res = await exec();

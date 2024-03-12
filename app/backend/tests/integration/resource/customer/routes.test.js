@@ -429,7 +429,7 @@ describe("/api/customer", () => {
       });
     });
 
-    it("should return a 401 status if the customer email is not exist", async () => {
+    it("should return a 401 status if the customer email does not exist", async () => {
       const res = await exec();
 
       expect(res.status).toBe(401);
