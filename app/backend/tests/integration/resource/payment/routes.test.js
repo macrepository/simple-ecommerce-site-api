@@ -10,6 +10,7 @@ describe("/api/payment", () => {
   beforeEach(() => {
     server = require("../../../../app");
     paymentData = {
+      is_active: true,
       method: "cod",
       name: "Cash on delivery",
     };

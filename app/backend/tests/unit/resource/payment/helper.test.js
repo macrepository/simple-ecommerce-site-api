@@ -7,6 +7,7 @@ describe("resource/payment/helper", () => {
 
   const invalidReqPaymentValues = [
     ["id", ["a", 0]],
+    ["is_active", [null, NaN, 1, "", undefined]],
     ["method", [longString(11), undefined]], // max length is 10
     ["name", [longString(51), undefined]], // max length is 50
   ];
@@ -14,6 +15,7 @@ describe("resource/payment/helper", () => {
   beforeEach(() => {
     paymentData = {
       id: 1,
+      is_active: true,
       method: "cod",
       name: "Cash on delivery",
     };
