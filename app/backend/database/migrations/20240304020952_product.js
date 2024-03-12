@@ -10,7 +10,7 @@ exports.up = function (knex) {
       .unsigned()
       .comment("Category Reference")
       .references("id")
-      .inTable("order");
+      .inTable("category");
     table.string("name", 50).notNullable().comment("Product Name");
     table.float("price", 9, 2).notNullable().comment("Product Price");
     table.integer("quantity", 6).notNullable().comment("Product Quantity");
