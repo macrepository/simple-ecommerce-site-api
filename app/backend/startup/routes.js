@@ -2,6 +2,7 @@ const bodyParser = require("koa-bodyparser");
 const customer = require("../resource/customer/routes");
 const order = require("../resource/order/routes");
 const quote = require("../resource/quote/routes");
+const payment = require("../resource/payment/routes");
 const { catchErrors } = require("../middleware/async-exception-handler");
 
 module.exports = function (app) {
@@ -12,4 +13,5 @@ module.exports = function (app) {
   app.use(customer.routes()).use(customer.allowedMethods());
   app.use(quote.routes()).use(quote.allowedMethods());
   app.use(order.routes()).use(order.allowedMethods());
+  app.use(payment.routes()).use(payment.allowedMethods());
 };
