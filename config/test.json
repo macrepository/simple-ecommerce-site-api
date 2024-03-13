@@ -3,7 +3,7 @@
         "dbHost": "simple-ecommerce-site_mysql",
         "dbUser": "ecommerce",
         "dbPassword": "pwdnac255",
-        "dbNameTest": "simple-ecommerce-site-test"
+        "dbNameTest": "simple-ecommerce-test"
     },
     "port": "3001",
     "nodeEnv": "test",

@@ -5,7 +5,7 @@
         "dbPassword": "DB_PASSWORD",
         "dbName": "DB_NAME"
     },
-    "port": "BACKEND_PORT",
+    "port": "API_PORT",
     "nodeEnv": "NODE_ENV",
     "jwtPrivateKey": "ECOM_JWT_PRIVATE_KEY"
 }
