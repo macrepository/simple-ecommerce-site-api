@@ -1,5 +1,0 @@
-#!/bin/bash
-
-source "${PWD}/.env"
-
-docker exec -it ${PROJECT}_mysql mysql -uroot -p"${MYSQL_PASSWORD}" ${MYSQL_DATABASE}
