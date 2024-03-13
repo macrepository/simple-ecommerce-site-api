@@ -1,6 +1,7 @@
 node_modules
 logs
 coverage
+.env
 
 # Editor directories and files
 .vscode/*
