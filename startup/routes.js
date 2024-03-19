@@ -1,3 +1,4 @@
+const cors = require("@koa/cors");
 const bodyParser = require("koa-bodyparser");
 const user = require("../resource/user/routes");
 const customer = require("../resource/customer/routes");
@@ -9,6 +10,7 @@ const product = require("../resource/product/routes");
 const { catchErrors } = require("../middleware/async-exception-handler");
 
 module.exports = function (app) {
+  app.use(cors());
   app.use(bodyParser());
 
   app.use(catchErrors);
