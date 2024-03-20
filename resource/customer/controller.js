@@ -129,6 +129,7 @@ async function loginCustomer(ctx) {
   delete customer.password;
   const token = generateToken({ ...customer });
   ctx.set("x-auth-token", token);
+  ctx.set("Access-Control-Expose-Headers", "x-auth-token");
 
   return response(
     ctx,
